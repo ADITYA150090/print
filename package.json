@@ -8,16 +8,36 @@
     "start": "next start"
   },
   "dependencies": {
+    "@prisma/client": "^6.15.0",
+    "axios": "^1.11.0",
+    "bcryptjs": "^3.0.2",
+    "cookie": "^1.0.2",
+    "dotenv": "^17.2.1",
+    "fabric": "^6.7.1",
+    "file-saver": "^2.0.5",
+    "html2canvas": "^1.4.1",
+    "jose": "^6.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "jspdf": "^3.0.2",
+    "lucide-react": "^0.542.0",
+    "mongodb": "5.5",
+    "mongoose": "^8.18.0",
+    "next": "15.5.0",
+    "nodemailer": "^7.0.5",
+    "prisma": "^6.15.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "next": "15.5.0"
+    "react-hot-toast": "^2.6.0"
   },
   "devDependencies": {
-    "typescript": "^5",
+    "@tailwindcss/postcss": "^4.1.12",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@tailwindcss/postcss": "^4",
-    "tailwindcss": "^4"
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.12",
+    "typescript": "^5"
   }
 }
