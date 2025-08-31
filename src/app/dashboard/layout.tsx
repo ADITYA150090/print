@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Sidebar from "@/components/Sidebar";
 
 export default function DashboardLayout({
@@ -7,17 +8,21 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <div className="flex h-screen">
-      {/* Sidebar on the left */}
-      <div className="w-64">
-        <Sidebar />
-      </div>
+  const [active, setActive] = useState("Dashboard");
 
-      {/* Main content on the right */}
-      <div className="flex-1 overflow-y-auto p-6">
+  return (
+    <div className="flex min-h-screen">
+      {/* Sidebar */}
+      <Sidebar active={active} setActive={setActive} />
+
+      {/* Main Content */}
+      <main
+        className={`flex-1 transition-all p-6 ${
+          active ? "ml-20 lg:ml-64" : "ml-20"
+        }`}
+      >
         {children}
-      </div>
+      </main>
     </div>
   );
 }
