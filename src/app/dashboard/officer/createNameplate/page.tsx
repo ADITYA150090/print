@@ -41,30 +41,41 @@ export default function Page() {
   const handleSave = async () => {
     if (!previewRef.current) return;
     setUploading(true);
-
+  
     try {
       // Convert div → Blob (image)
       const blob = await toBlob(previewRef.current, {
-        backgroundColor: "white", // fixes transparent issues
+        backgroundColor: "white",
       });
-
+  
       if (!blob) {
         alert("❌ Failed to generate image");
         setUploading(false);
         return;
       }
-
+  
       const fileName = `nameplate-${Date.now()}.png`;
-
+  
       const { error } = await supabase.storage
-        .from("Nameplate") // ✅ bucket name
+        .from("Nameplate") // ✅ your bucket name
         .upload(fileName, blob, { upsert: false });
-
+  
       if (error) {
         console.error(error);
         alert("❌ Upload failed: " + error.message);
       } else {
         alert("✅ Nameplate uploaded to Supabase!");
+  
+        // ✅ Send notification to backend
+        await fetch("/api/Dashboard/rmo/notifications", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            message: `New nameplate created: ${houseName}`,
+            type: "success",
+            userId: "officer-123", // 🔑 Replace with actual logged-in officer ID if available
+          }),
+        });
       }
     } catch (err: any) {
       alert("❌ Error: " + err.message);
@@ -72,7 +83,7 @@ export default function Page() {
       setUploading(false);
     }
   };
-
+  
   return (
     <div className="flex min-h-screen bg-gray-100">
       {/* Sidebar */}

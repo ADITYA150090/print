@@ -9,6 +9,7 @@ import {
   LogOut,
   Users,
   ChevronRight,
+  Bell,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -64,6 +65,7 @@ const dashboardRoute =
     { name: "Dashboard", icon: <BarChart2 size={20} />, route: dashboardRoute },
     { name: "Officers", icon: <Users size={20} />, route: "/dashboard/officers" },
     { name: "Billing", icon: <FileText size={20} />, route: "/dashboard/billing" },
+    { name: "notification", icon: <Bell size={20} />, route: "/dashboard/notification" },
     { name: "Profile", icon: <User size={20} />, route: "/dashboard/profile" },
   ];
 

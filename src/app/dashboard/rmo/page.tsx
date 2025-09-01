@@ -14,8 +14,9 @@ export default function DashboardPage() {
         const res = await fetch("/api/rmo");
         const data = await res.json();
         if (data.success && Array.isArray(data.officers)) {
-          setOfficers(data.officers); // ✅ only set the officers array
+          setOfficers(data.officers);
         }
+        
       } catch (error) {
         console.error("Failed to fetch officers:", error);
       } finally {
@@ -42,7 +43,7 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
+    <div className="min-h-screen text-black bg-gray-100 p-6">
       <h1 className="text-3xl sm:text-4xl font-extrabold text-black mb-6">
         Dashboard
       </h1>

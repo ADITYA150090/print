@@ -5,13 +5,15 @@ import User from "@/models/User";
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   await dbConnect();
 
-  const { id } = req.query;
-
   try {
-    const user = await User.findById(id).select("officerName role designation");
-    if (!user) return res.status(404).json({ error: "User not found" });
+    // fetch all officers (you can filter by role if needed)
+    const officers = await User.find({ role: "officer" }).select("officerName role designation");
 
-    res.status(200).json(user);
+    res.status(200).json({
+      success: true,
+      count: officers.length,
+      officers,
+    });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
