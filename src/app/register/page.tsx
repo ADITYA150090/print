@@ -38,7 +38,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+    <div className="min-h-screen flex items-center text-black justify-center bg-gray-100 p-4">
       <div className="w-full max-w-lg bg-white shadow-lg rounded-2xl p-8">
         {/* Step indicator */}
         <div className="flex justify-between mb-6">

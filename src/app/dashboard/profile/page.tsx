@@ -54,12 +54,12 @@ export default function Dashboard() {
         {/* Header */}
         <div className="flex items-center gap-6 mb-8">
           <img
-            src={`https://ui-avatars.com/api/?name=${user.name}&background=6366f1&color=fff`}
+            src={`https://ui-avatars.com/api/?name=${user.officerName}&background=6366f1&color=fff`}
             alt="Profile"
             className="w-20 h-20 rounded-full border-4 border-indigo-400 shadow-md"
           />
           <div>
-            <h1 className="text-2xl font-bold text-white">{user.name}</h1>
+            <h1 className="text-2xl font-bold text-white">{user.officerName}</h1>
             <p className="text-indigo-200 font-medium">{user.role}</p>
           </div>
         </div>

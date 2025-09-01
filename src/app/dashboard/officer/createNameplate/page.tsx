@@ -2,7 +2,8 @@
 
 import { useRef, useState } from "react";
 import Image from "next/image";
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from '@supabase/supabase-js';
+
 import { toBlob } from "html-to-image";
 
 // ✅ Supabase client
@@ -54,10 +55,22 @@ export default function Page() {
         return;
       }
   
-      const fileName = `nameplate-${Date.now()}.png`;
+      // 1️⃣ Get officer from /api/auth/me
+      const meRes = await fetch("/api/auth/me");
+      const { user } = await meRes.json();
   
+      if (!user || !user.officerName) {
+        throw new Error("Officer name missing from /api/auth/me response");
+      }
+  
+      // 2️⃣ Create folder based on officerName
+      const officerFolder = user.officerName.replace(/\s+/g, "_").toLowerCase();
+  
+      const fileName = `${officerFolder}/nameplate-${Date.now()}.png`;
+  
+      // 3️⃣ Upload into officer’s folder in Supabase
       const { error } = await supabase.storage
-        .from("Nameplate") // ✅ your bucket name
+        .from("Nameplate") // ✅ bucket name
         .upload(fileName, blob, { upsert: false });
   
       if (error) {
@@ -66,14 +79,14 @@ export default function Page() {
       } else {
         alert("✅ Nameplate uploaded to Supabase!");
   
-        // ✅ Send notification to backend
+        // 4️⃣ Send notification to backend
         await fetch("/api/Dashboard/rmo/notifications", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            message: `New nameplate created: ${houseName}`,
+            message: `New nameplate created by ${user.officerName}`,
             type: "success",
-            userId: "officer-123", // 🔑 Replace with actual logged-in officer ID if available
+            userId: user.id, // 🔑 from backend
           }),
         });
       }
@@ -83,6 +96,8 @@ export default function Page() {
       setUploading(false);
     }
   };
+  
+  
   
   return (
     <div className="flex min-h-screen bg-gray-100">
