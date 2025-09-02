@@ -1,33 +1,25 @@
-import User from "@/models/User";
-import connectDB from "@/lib/mongodb";
 import bcrypt from "bcryptjs";
+import User from "@/models/User";
 
-export async function registerUser(data: {
-  officerName: string;
-  email: string;
-  password: string;
-  mobileNumber: string;
-  role: string;
-  designation?: string;
-  area?: string;
-  deliveryOffice?: string;
-  address?: string;
-}) {
-  // Connect to DB
-  await connectDB();
+export const registerUser = async (data: any) => {
+  const { officerName, email, password, mobileNumber, rmoNumber } = data;
 
-  const { officerName, email, password, mobileNumber, role, designation, area, deliveryOffice, address } = data;
-
-  // Validate required fields
-  if (!officerName || !email || !password || !mobileNumber || !role) {
-    throw new Error("Missing required fields");
+  if (!officerName || !email || !password || !mobileNumber || !rmoNumber) {
+    throw new Error("All required fields must be filled");
   }
 
   // Check if user already exists
   const existingUser = await User.findOne({ email });
   if (existingUser) {
-    throw new Error("User already exists");
+    throw new Error("Email already registered");
   }
+
+  // Count officers under this RMO
+  const officerCount = await User.countDocuments({ rmoNumber });
+
+  // Generate officer code
+  const rmoId = rmoNumber.replace("RMO", "");
+  const officerCode = `OFF${rmoId}${officerCount + 1}`;
 
   // Hash password
   const hashedPassword = await bcrypt.hash(password, 10);
@@ -38,12 +30,23 @@ export async function registerUser(data: {
     email,
     password: hashedPassword,
     mobileNumber,
-    role,
-    designation,
-    area,
-    deliveryOffice,
-    address,
+    rmoNumber,
+    officerCode,
+    isActive: true,
+    loginCount: 0,
+    permissions: [],
+    assignedRegions: [],
+    performanceMetrics: {
+      totalOrders: 0,
+      completedOrders: 0,
+      totalRevenue: 0,
+      averageRating: 0,
+    },
   });
 
-  return newUser;
-}
+  return {
+    officerCode: newUser.officerCode,
+    email: newUser.email,
+    officerName: newUser.officerName,
+  };
+};

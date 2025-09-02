@@ -1,26 +1,32 @@
+// app/api/auth/register/route.ts
 import { NextResponse } from "next/server";
-import connectDB from "@/lib/mongodb";
-import { registerUser } from "@/controllers/authController";
+import bcrypt from "bcryptjs";
+import dbConnect from "@/lib/dbConnect";
+import User from "@/models/User";
 
 export async function POST(req: Request) {
+  await dbConnect();
   try {
-    // Connect to DB
-    await connectDB();
+    const { officerName, email, password, mobileNumber, rmo } = await req.json();
 
-    // Parse request body
-    const body = await req.json();
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Register user
-    const user = await registerUser(body);
+    // Count officers in this RMO
+    const count = await User.countDocuments({ rmo });
+    const officerNumber = `OFF${rmo.replace("RMO", "")}${count + 1}`;
 
-    // Return success
-    return NextResponse.json({ success: true, user }, { status: 201 });
+    const newUser = await User.create({
+      officerName,
+      email,
+      password: hashedPassword,
+      mobileNumber,
+      rmo,
+      officerNumber,
+    });
+
+    return NextResponse.json({ success: true, user: newUser }, { status: 201 });
   } catch (error: any) {
-    console.error("❌ Error registering user:", error);
-
-    return NextResponse.json(
-      { success: false, error: error.message || "Server Error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, message: error.message }, { status: 400 });
   }
 }
