@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 
 interface Officer {
   _id: string;
@@ -11,6 +11,7 @@ interface Officer {
 
 export default function RmoOfficersPage() {
   const params = useParams();
+  const router = useRouter();
   const rmo = params?.rmo as string;
 
   const [officers, setOfficers] = useState<Officer[]>([]);
@@ -79,7 +80,10 @@ export default function RmoOfficersPage() {
           {filteredOfficers.map((officer) => (
             <li
               key={officer._id}
-              className="p-3 border rounded shadow-sm text-black bg-red-500"
+              className="p-3 border rounded shadow-sm text-black bg-red-500 cursor-pointer hover:bg-red-600 transition"
+              onClick={() =>
+                router.push(`/rmo/${rmo}/officers/${officer._id}/lots`)
+              }
             >
               <p>
                 <span className="font-semibold">ID:</span> {officer._id}

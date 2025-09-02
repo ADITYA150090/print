@@ -1,17 +1,23 @@
 import { NextResponse } from "next/server";
 
-// GET all lots for officer
 export async function GET(
   req: Request,
-  { params }: { params: { rmo: string; officer: string } }
+  { params }: { params: { rmo: string; officerId: string } }
 ) {
-  const { officer } = params;
+  const { rmo, officerId } = params;
 
-  // TODO: Replace with DB call
+  // 🔹 Hardcoded lots for now
   const lots = [
-    { id: "L1", name: `Lot 1 for ${officer}` },
-    { id: "L2", name: `Lot 2 for ${officer}` },
+    { id: "LOT1", name: "Lot 1" },
+    { id: "LOT2", name: "Lot 2" },
+    { id: "LOT3", name: "Lot 3" },
+    { id: "LOT4", name: "Lot 4" },
   ];
 
-  return NextResponse.json({ lots });
+  return NextResponse.json({
+    success: true,
+    rmo,
+    officerId,
+    lots,
+  });
 }
