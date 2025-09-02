@@ -45,8 +45,8 @@ export default function OfficerDashboardPage() {
 
   const handleActionClick = (action: string) => {
     switch (action) {
-      case "createNameplate":
-        router.push(`/${officerId}/createNameplate`);
+      case "showlots":
+        router.push(`/${officerId}/lots`);
         break;
       case "trackOrder":
         router.push(`/officers/${officerId}/track-order`);
@@ -115,12 +115,12 @@ export default function OfficerDashboardPage() {
       {/* Action Buttons */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <button
-          onClick={() => handleActionClick("createNameplate")}
+          onClick={() => handleActionClick("showlots")}
           className="bg-indigo-600 text-white rounded-2xl p-6 flex items-center justify-between hover:bg-indigo-700 transition"
         >
           <div>
-            <p className="font-semibold text-lg">Create Name Plate</p>
-            <p className="text-gray-200 mt-1 text-sm">Design new nameplates</p>
+            <p className="font-semibold text-lg">Show Lots</p>
+            <p className="text-gray-200 mt-1 text-sm">Create New Lots</p>
           </div>
           <Plus className="w-8 h-8" />
         </button>
