@@ -1,18 +1,15 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Plus, MapPin, FileText, CheckCircle, Truck, Package } from "lucide-react";
 import { useState, useEffect } from "react";
 
-export default function OfficerDashboardPage({
-  params,
-}: {
-  params: { officer: string; rmo: string };
-}) {
+export default function OfficerDashboardPage() {
   const router = useRouter();
+  const params = useParams<{ officer: string }>();
 
-  // Hardcoded officerId for now
-  const officerId = "off11"; 
+  // Officer ID comes from URL: /off11 → officerId = "off11"
+  const officerId = params.officer;
 
   // Fake stats (can later be fetched from API)
   const [stats, setStats] = useState({
@@ -24,23 +21,22 @@ export default function OfficerDashboardPage({
 
   useEffect(() => {
     console.log("Officer Page Mounted");
-    console.log("From dynamic route officer:", params.officer);
-    console.log("Hardcoded officerId:", officerId);
-  }, [params.officer]);
+    console.log("Dynamic officerId from route:", officerId);
+  }, [officerId]);
 
   const handleCardClick = (type: string) => {
     switch (type) {
       case "unverified":
-        router.push(`/rmo/${params.rmo}/officers/${officerId}/lots/unverified`);
+        router.push(`/officers/${officerId}/lots/unverified`);
         break;
       case "verified":
-        router.push(`/rmo/${params.rmo}/officers/${officerId}/lots/verified`);
+        router.push(`/officers/${officerId}/lots/verified`);
         break;
       case "onTransit":
-        router.push(`/rmo/${params.rmo}/officers/${officerId}/lots/on-transit`);
+        router.push(`/officers/${officerId}/lots/on-transit`);
         break;
       case "totalDelivered":
-        router.push(`/rmo/${params.rmo}/officers/${officerId}/lots/delivered`);
+        router.push(`/officers/${officerId}/lots/delivered`);
         break;
       default:
         break;
@@ -50,10 +46,10 @@ export default function OfficerDashboardPage({
   const handleActionClick = (action: string) => {
     switch (action) {
       case "createNameplate":
-        router.push(`/rmo/${params.rmo}/officers/${officerId}/lots/createNameplate`);
+        router.push(`/${officerId}/createNameplate`);
         break;
       case "trackOrder":
-        router.push(`/rmo/${params.rmo}/officers/${officerId}/track-order`);
+        router.push(`/officers/${officerId}/track-order`);
         break;
       default:
         break;

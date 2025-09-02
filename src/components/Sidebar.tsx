@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, ReactNode } from "react";
 import {
   ChevronLeft,
   User,
@@ -15,17 +15,24 @@ import { useRouter } from "next/navigation";
 
 type UserType = {
   name?: string;
-  officerName?: string; // fallback
-  role?: "officer" | "rmo" | "admin" | string;
+  officerName?: string;
+  role?: string;
   email?: string;
+};
+
+type MenuItem = {
+  name: string;
+  icon: ReactNode;
+  route: string;
 };
 
 interface SidebarProps {
   active: string;
   setActive: (item: string) => void;
+  menuItems: MenuItem[]; // ✅ Now menu is dynamic
 }
 
-export default function Sidebar({ active, setActive }: SidebarProps) {
+export default function Sidebar({ active, setActive, menuItems }: SidebarProps) {
   const [isOpen, setIsOpen] = useState(true);
   const [user, setUser] = useState<UserType | null>(null);
   const router = useRouter();
@@ -46,28 +53,7 @@ export default function Sidebar({ active, setActive }: SidebarProps) {
     fetchUser();
   }, []);
 
-  // Pick correct name (backend sometimes may differ)
   const displayName = user?.name || user?.officerName || "User";
-
- // Role-based dashboard route
-const role = user?.role?.toLowerCase();
-
-const dashboardRoute =
-  role === "officer"
-    ? "/dashboard/officer"
-    : role === "rmo"
-    ? "/dashboard/rmo"
-    : role === "admin"
-    ? "/dashboard/admin"
-    : "/dashboard/admin"; // fallback
-
-  const menuItems = [
-    { name: "Dashboard", icon: <BarChart2 size={20} />, route: dashboardRoute },
-    { name: "Officers", icon: <Users size={20} />, route: "/dashboard/officers" },
-    { name: "Billing", icon: <FileText size={20} />, route: "/dashboard/billing" },
-    { name: "notification", icon: <Bell size={20} />, route: "/dashboard/notification" },
-    { name: "Profile", icon: <User size={20} />, route: "/dashboard/profile" },
-  ];
 
   return (
     <aside
@@ -76,7 +62,7 @@ const dashboardRoute =
       text-white shadow-2xl transition-all duration-300 ease-in-out
       ${isOpen ? "w-64" : "w-20"}`}
     >
-      {/* Profile Section */}
+      {/* Profile */}
       <div className="flex items-center gap-3 p-4 border-b border-gray-700">
         <img
           src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
@@ -115,7 +101,7 @@ const dashboardRoute =
         ))}
       </nav>
 
-      {/* Logout Button */}
+      {/* Logout */}
       <div className="mt-auto p-4">
         <button
           onClick={async () => {
@@ -130,7 +116,7 @@ const dashboardRoute =
         </button>
       </div>
 
-      {/* Toggle Button */}
+      {/* Toggle */}
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="absolute top-4 -right-3 bg-indigo-600 text-white p-2 rounded-full shadow-md hover:bg-indigo-500 transition"

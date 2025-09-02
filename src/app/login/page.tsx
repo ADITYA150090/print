@@ -35,7 +35,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
+    <div className="min-h-screen flex items-center justify-center text-black bg-gray-50 p-6">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 border border-gray-200">
         {/* Title */}
         <h1 className="text-3xl font-extrabold text-center text-gray-900 mb-2">
