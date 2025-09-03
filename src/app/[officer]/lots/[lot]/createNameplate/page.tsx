@@ -1,9 +1,13 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { createClient } from "@supabase/supabase-js";
 import { toBlob } from "html-to-image";
+
+import { useParams, useRouter } from "next/navigation";
+
+
 
 // ✅ Supabase client
 const supabase = createClient(
@@ -43,7 +47,7 @@ interface Nameplate {
   officer_name: string;
   
   email: string;
-  mobile_number: string;
+  mobileNumber: string;
 }
 
 // ✅ MongoDB Document Interface
@@ -54,7 +58,7 @@ interface NameplateDocument {
   officer_name: string;
   
   email: string;
-  mobile_number: string;
+  mobileNumber: string;
   image_url: string;
   verified: boolean;
   created_at: string;
@@ -70,27 +74,85 @@ interface ApiResponse {
   data?: any;
 }
 
+
+
 export default function Page() {
+   const params = useParams();   // ✅ returns an object
+  const router = useRouter();
+ 
+
+   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+     console.log(params.lot)
+    const fetchUser = async () => {
+      try {
+        const res = await fetch("/api/auth/me", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include", // ✅ important if you're using cookies/session
+        });
+
+        if (!res.ok) {
+          throw new Error("Failed to fetch user");
+        }
+
+        const data: User = await res.json();
+       
+        setUser(data.user);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
+  console.log(user)
+  console.log(user?.rmo);
+
+
   // ✅ Updated Initial State with MongoDB fields
-  const [nameplates, setNameplates] = useState<Nameplate[]>([
-    {
-      id: "1",
-      theme: "ambuja",
-      background: templates.ambuja[0],
-      houseName: "My Sweet Home",
-      ownerName: "Aditya Dhawle",
-      address: "Plot No. 21, Pune, India",
-      textColor: "#FFD700",
-      // MongoDB fields
-      rmo: "RMO1",
-      officer: "Officer1",
-      lot: "Lot1",
-      officer_name: "Aditya Dhawle",
-      
-      email: "aditya@example.com",
-      mobile_number: "1234567890",
-    },
-  ]);
+const [nameplates, setNameplates] = useState<Nameplate[]>([
+  {
+    id: "1",
+    theme: "ambuja",
+    background: templates.ambuja[0],
+    houseName: "My Sweet Home",
+    ownerName: "Aditya Dhawle",
+    address: "Plot No. 21, Pune, India",
+    textColor: "#FFD700",
+    // Start with empty, update when user is fetched
+    rmo: "",
+    officer: "",
+    lot: (params.lot as string) ?? "",
+    officer_name: "",
+    email: "",
+    mobileNumber: "",
+  },
+]);
+
+useEffect(() => {
+  if (user) {
+    setNameplates(prev =>
+      prev.map(n => ({
+        ...n,
+        rmo: user.rmo ?? "",
+        officer: user.officerNumber ?? "",
+        officer_name: user.officerName ?? "",
+        email: user.email ?? "",
+        mobileNumber: user.mobileNumber ?? "",
+      }))
+    );
+  }
+}, [user]);
+
   
   const [activeNameplateId, setActiveNameplateId] = useState("1");
   const [uploading, setUploading] = useState(false);
@@ -130,7 +192,7 @@ export default function Page() {
       officer_name: "Officer Name",
       
       email: "officer@example.com",
-      mobile_number: "0000000000",
+      mobileNumber: "0000000000",
     };
     setNameplates(prev => [...prev, newNameplate]);
     setActiveNameplateId(newId);
@@ -181,26 +243,43 @@ export default function Page() {
     try {
       setLastError(null);
 
-      const mongoDocument: NameplateDocument = {
-        rmo: nameplateData.rmo,
-        officer: nameplateData.officer,
-        lot: nameplateData.lot,
-        officer_name: nameplateData.officer_name,
-        
-        email: nameplateData.email,
-        mobile_number: nameplateData.mobile_number,
-        image_url: imageUrl,
-        verified: false,
-        created_at: new Date().toISOString(),
-      };
+const mongoDocument = {
+  theme: nameplateData.theme,
+  background: nameplateData.background,
+  houseName: nameplateData.houseName,
+  ownerName: nameplateData.ownerName,
+  address: nameplateData.address,
+  textColor: nameplateData.textColor,
+
+  rmo: nameplateData.rmo,
+  officer: nameplateData.officer,
+  lot: nameplateData.lot,
+  officer_name: nameplateData.officer_name,
+  email: nameplateData.email,
+
+  // Backend expects these exact names:
+  mobile_number: nameplateData.mobileNumber,
+  image_url: imageUrl, // 🔥 from Supabase
+  designation: nameplateData.officer_name, // or any value you want
+};
+
+
 
       console.log('📤 Sending to MongoDB:', mongoDocument);
 
-      const response = await fetch(`/officer/lots/${lot}/createNameplate`, {
-        method: 'POST',
-        body: JSON.stringify(mongoDocument),
-        headers: { 'Content-Type': 'application/json' }
-      });
+const response = await fetch(
+  `/api/${nameplateData.officer}/lots/${nameplateData.lot}/createNameplate`,
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(mongoDocument),
+  }
+);
+
+
+
 
       const responseText = await response.text();
       console.log('📥 Raw API Response:', responseText);
@@ -231,25 +310,25 @@ export default function Page() {
     }
   };
 
-  // ✅ Validate Nameplate Data
-  const validateNameplateData = (nameplate: Nameplate): string[] => {
-    const errors: string[] = [];
-    
-    if (!nameplate.rmo.trim()) errors.push('RMO is required');
-    if (!nameplate.officer.trim()) errors.push('Officer is required');
-    if (!nameplate.lot.trim()) errors.push('Lot is required');
-    if (!nameplate.officer_name.trim()) errors.push('Officer Name is required');
+const validateNameplateData = (nameplate: Nameplate): string[] => {
+  const errors: string[] = [];
   
-    if (!nameplate.email.trim()) errors.push('Email is required');
-    if (!nameplate.mobile_number.trim()) errors.push('Mobile Number is required');
-    
-    // Basic email validation
-    if (nameplate.email.trim() && !/\S+@\S+\.\S+/.test(nameplate.email)) {
-      errors.push('Invalid email format');
-    }
-    
-    return errors;
-  };
+  if (!(nameplate.rmo ?? "").trim()) errors.push("RMO is required");
+  if (!(nameplate.officer ?? "").trim()) errors.push("Officer is required");
+  if (!(nameplate.lot ?? "").trim()) errors.push("Lot is required");
+  if (!(nameplate.officer_name ?? "").trim()) errors.push("Officer Name is required");
+  if (!(nameplate.email ?? "").trim()) errors.push("Email is required");
+  if (!(nameplate.mobileNumber ?? "").trim()) errors.push("Mobile Number is required");
+
+  if ((nameplate.email ?? "").trim() && !/\S+@\S+\.\S+/.test(nameplate.email)) {
+    errors.push("Invalid email format");
+  }
+
+  // imageUrl is optional during validation
+  return errors;
+};
+
+
 
   // ✅ FIXED: Updated handleSave with proper DOM update waiting
   const handleSave = async () => {
@@ -531,8 +610,8 @@ export default function Page() {
               <label className="text-xs text-gray-600">Mobile *</label>
               <input
                 type="text"
-                value={activeNameplate.mobile_number}
-                onChange={(e) => updateActiveNameplate({ mobile_number: e.target.value })}
+                value={activeNameplate.mobileNumber}
+                onChange={(e) => updateActiveNameplate({ mobileNumber: e.target.value })}
                 className="w-full border rounded p-2 text-sm"
                 placeholder="1234567890"
                 required
