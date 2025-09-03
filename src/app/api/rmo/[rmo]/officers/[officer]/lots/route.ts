@@ -1,40 +1,39 @@
 import { NextResponse } from "next/server";
-import dbConnect from "@/lib/mongodb";
-import UnverifiedNameplate from "@/models/unverifiedNameplate";
 
 export async function GET(
   req: Request,
-  { params }: { params: { rmo: string; officerId: string } }
+  { params }: { params: { rmo: string; officer: string } }
 ) {
-  const { rmo, officerId } = params;
+  const { rmo, officer } = params;
 
   try {
-    await dbConnect();
+    // Fetch unverified lots from /api/unverify
+    const res = await fetch(`${req.url.split("/api/rmo/")[0]}/api/unverify`);
+    const data = await res.json();
 
-    // Fetch only relevant records for this RMO + Officer
-    const records = await UnverifiedNameplate.find(
-      { rmo, officer: officerId },
-      { lot: 1 } // fetch only lot field for efficiency
-    );
+    if (!data.success || !Array.isArray(data.data)) {
+      return NextResponse.json(
+        { success: false, error: "Failed to fetch unverified lots" },
+        { status: 500 }
+      );
+    }
 
-    // Extract unique lot IDs
-    const uniqueLots = Array.from(new Set(records.map((r) => r.lot)));
-
-    // Convert into { id, name } format
-    const lots = uniqueLots.map((lot) => ({
-      id: lot,
-      name: lot.toUpperCase(), // optional formatting
-    }));
+    // Filter lots by RMO and officer number
+    const filteredLots = data.data
+      .filter((item: any) => item.rmo === rmo && item.officer === officer)
+      .map((item: any) => ({
+        id: item.lot,
+        name: item.houseName || item.lot,
+      }));
 
     return NextResponse.json({
       success: true,
       rmo,
-      officerId,
-      count: lots.length,
-      lots,
+      officer,
+      lots: filteredLots,
     });
   } catch (err: any) {
-    console.error("❌ Error in GET lots:", err);
+    console.error("❌ GET /api/rmo/[rmo]/officers/[officer]/lots error:", err);
     return NextResponse.json(
       { success: false, error: err.message || "Internal server error" },
       { status: 500 }

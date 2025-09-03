@@ -1,56 +1,42 @@
 import { NextResponse } from "next/server";
 
-export async function GET() {
-  const records = [
-    {
-      id: "1",
-      houseName: "Mangal Villa",
-      ownerName: "Arjun Deshmukh",
-      spouseName: "Kavita Deshmukh",
-      address: "101, Lake View Colony, Bhopal",
-      imageUrl: "/images/lot1/house1.png",
-    },
-    {
-      id: "2",
-      houseName: "Surya Nivas",
-      ownerName: "Deepak Joshi",
-      spouseName: "Anjali Joshi",
-      address: "12, Residency Road, Indore",
-      imageUrl: "/images/lot1/house2.png",
-    },
-    {
-      id: "3",
-      houseName: "Vasant Kunj",
-      ownerName: "Nitin Chawla",
-      spouseName: "Poonam Chawla",
-      address: "77, Civil Lines, Lucknow",
-      imageUrl: "/images/lot1/house3.png",
-    },
-    {
-      id: "4",
-      houseName: "Shree Dham",
-      ownerName: "Harish Patil",
-      spouseName: "Smita Patil",
-      address: "34, Camp Area, Nashik",
-      imageUrl: "/images/lot1/house4.png",
-    },
-    {
-      id: "5",
-      houseName: "Rajdeep Villa",
-      ownerName: "Vikram Singh",
-      spouseName: "Priya Singh",
-      address: "19, Cantonment, Jodhpur",
-      imageUrl: "/images/lot1/house5.png",
-    },
-    {
-      id: "6",
-      houseName: "Gokul Sadan",
-      ownerName: "Mahesh Iyer",
-      spouseName: "Revathi Iyer",
-      address: "88, Gandhi Nagar, Chennai",
-      imageUrl: "/images/lot1/house6.png",
-    },
-  ];
+export async function GET(
+  req: Request,
+  { params }: { params: { rmo: string; officer: string; lot: string } }
+) {
+  const { rmo, officer, lot } = params;
 
-  return NextResponse.json({ success: true, records });
+  try {
+    // Full URL to /api/unverify
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+    const res = await fetch(`${baseUrl}/api/unverify`);
+    const data = await res.json();
+
+    if (!data.success || !Array.isArray(data.data)) {
+      return NextResponse.json({ success: false, records: [] });
+    }
+
+    // Filter by RMO, officer, lot, and verified=false
+    const records = data.data
+      .filter(
+        (item: any) =>
+          item.rmo === rmo &&
+          item.officer === officer &&
+          item.lot === lot &&
+          item.verified === false
+      )
+      .map((item: any) => ({
+        id: item._id,
+        houseName: item.houseName,
+        ownerName: item.ownerName,
+        spouseName: item.spouseName || "", // optional
+        address: item.address,
+        imageUrl: item.image_url,
+      }));
+
+    return NextResponse.json({ success: true, records });
+  } catch (error) {
+    console.error("❌ Failed to fetch unverified lots:", error);
+    return NextResponse.json({ success: false, records: [] });
+  }
 }

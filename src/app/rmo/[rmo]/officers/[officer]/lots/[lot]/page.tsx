@@ -13,9 +13,9 @@ interface HouseRecord {
 }
 
 export default function LotDetailsPage() {
-  const { rmo, officerId, lot } = useParams() as {
+  const { rmo, officer, lot } = useParams() as {
     rmo: string;
-    officerId: string;
+    officer: string;
     lot: string;
   };
 
@@ -27,39 +27,34 @@ export default function LotDetailsPage() {
     const fetchRecords = async () => {
       try {
         const res = await fetch(
-          `/api/rmo/${rmo}/officers/${officerId}/lots/${lot}`
+          `/api/rmo/${rmo}/officers/${officer}/lots/${lot}`
         );
         const data = await res.json();
 
         if (data.success && Array.isArray(data.records)) {
           setRecords(data.records);
+        } else {
+          setRecords([]);
         }
       } catch (error) {
         console.error("Failed to fetch records:", error);
+        setRecords([]);
       } finally {
         setLoading(false);
       }
     };
 
     fetchRecords();
-  }, [rmo, officerId, lot]);
+  }, [rmo, officer, lot]);
 
-  // ✅ Send all data to print API
   const handleSendToPrint = async () => {
     try {
       setSending(true);
       const res = await fetch("/api/admin/print", {
-
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          rmo,
-          officerId,
-          lot,
-          records, // sending all fetched data
-        }),
+        body: JSON.stringify({ rmo, officer, lot, records }),
       });
-
       const result = await res.json();
       if (res.ok) {
         alert("✅ Data sent to print successfully!");
@@ -79,7 +74,7 @@ export default function LotDetailsPage() {
       <div className="max-w-6xl mx-auto">
         <h1 className="text-2xl font-bold mb-6 text-gray-800">
           Lot <span className="text-blue-600">{lot}</span> under Officer{" "}
-          <span className="text-green-600">{officerId}</span>
+          <span className="text-green-600">{officer}</span>
         </h1>
 
         {loading ? (
@@ -102,14 +97,9 @@ export default function LotDetailsPage() {
               </thead>
               <tbody>
                 {records.map((record, idx) => (
-                  <tr
-                    key={record.id}
-                    className="border-t hover:bg-gray-50 transition"
-                  >
+                  <tr key={record.id} className="border-t hover:bg-gray-50 transition">
                     <td className="px-4 py-3">{idx + 1}</td>
-                    <td className="px-4 py-3 font-medium">
-                      {record.houseName}
-                    </td>
+                    <td className="px-4 py-3 font-medium">{record.houseName}</td>
                     <td className="px-4 py-3">{record.ownerName}</td>
                     <td className="px-4 py-3">{record.spouseName}</td>
                     <td className="px-4 py-3">{record.address}</td>
@@ -132,7 +122,6 @@ export default function LotDetailsPage() {
         )}
       </div>
 
-      {/* ✅ Floating Send to Print Button */}
       {records.length > 0 && (
         <button
           onClick={handleSendToPrint}
