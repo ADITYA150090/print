@@ -14,9 +14,10 @@ export interface IUnverifiedNameplate extends Document {
   lot: string;
   officer_name: string;
   email: string;
-  mobileNumber?: string;   // optional now
-  imageUrl?: string;       // optional now
-  designation?: string;    // optional, can remove if not needed
+  mobile_number?: string;   // match DB
+  image_url?: string;       // match DB
+  designation?: string;
+  verified?: boolean;
 
   createdAt?: Date;
   updatedAt?: Date;
@@ -36,16 +37,18 @@ const UnverifiedNameplateSchema: Schema = new Schema(
     lot: { type: String, required: true },
     officer_name: { type: String, required: true },
     email: { type: String, required: true },
-    mobileNumber: { type: String, default: "" }, // optional
-    imageUrl: { type: String, default: "" },     // optional
-    designation: { type: String, default: "" },  // optional
+    mobile_number: { type: String, default: "" }, // match DB field
+    image_url: { type: String, default: "" },     // match DB field
+    designation: { type: String, default: "" },
+    verified: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
 
-// Prevent overwrite error in Next.js
+// 👇 Force mongoose to use `nameplates` collection
 export default models.UnverifiedNameplate ||
   mongoose.model<IUnverifiedNameplate>(
     "UnverifiedNameplate",
-    UnverifiedNameplateSchema
+    UnverifiedNameplateSchema,
+    "nameplates"
   );
