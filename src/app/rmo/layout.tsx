@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { BarChart2, Users, FileText, Bell, User } from "lucide-react";
+import { BarChart2, Users, FileText, Bell, User, InfoIcon } from "lucide-react";
 import Sidebar from "@/components/Sidebar"; // adjust path if needed
 
 export default function DashboardLayout({
@@ -18,6 +18,7 @@ export default function DashboardLayout({
     { name: "nitin", icon: <FileText size={20} />, route: "/dashboard/billing" },
     { name: "Notification", icon: <Bell size={20} />, route: "/dashboard/notification" },
     { name: "Profile", icon: <User size={20} />, route: "/dashboard/profile" },
+    { name: "How to use", icon: <InfoIcon size={20} />, route: "/dashboard/profile" },
   ];
 
   return (

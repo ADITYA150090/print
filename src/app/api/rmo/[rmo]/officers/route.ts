@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import dbConnect from "@/lib/dbConnect";
+import dbConnect from "@/lib/mongodb";
+
 import User from "@/models/User"; // your schema
 
 // GET all officers for a given RMO

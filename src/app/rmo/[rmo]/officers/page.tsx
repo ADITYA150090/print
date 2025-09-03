@@ -82,7 +82,7 @@ export default function RmoOfficersPage() {
               key={officer._id}
               className="p-3 border rounded shadow-sm text-black bg-red-500 cursor-pointer hover:bg-red-600 transition"
               onClick={() =>
-                router.push(`/rmo/${rmo}/officers/${officer._id}/lots`)
+                router.push(`/rmo/${rmo}/officers/${officer.officerNumber}/lots`)
               }
             >
               <p>

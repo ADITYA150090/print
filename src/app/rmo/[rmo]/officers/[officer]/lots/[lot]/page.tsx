@@ -21,11 +21,11 @@ export default function LotDetailsPage() {
 
   const [records, setRecords] = useState<HouseRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sending, setSending] = useState(false);
 
   useEffect(() => {
     const fetchRecords = async () => {
       try {
-        // API hardcoded for now
         const res = await fetch(
           `/api/rmo/${rmo}/officers/${officerId}/lots/${lot}`
         );
@@ -44,8 +44,38 @@ export default function LotDetailsPage() {
     fetchRecords();
   }, [rmo, officerId, lot]);
 
+  // ✅ Send all data to print API
+  const handleSendToPrint = async () => {
+    try {
+      setSending(true);
+      const res = await fetch("/api/admin/print", {
+
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          rmo,
+          officerId,
+          lot,
+          records, // sending all fetched data
+        }),
+      });
+
+      const result = await res.json();
+      if (res.ok) {
+        alert("✅ Data sent to print successfully!");
+      } else {
+        alert(`❌ Print request failed: ${result.message || "Unknown error"}`);
+      }
+    } catch (err) {
+      console.error("Print API error:", err);
+      alert("❌ Failed to send data to print API");
+    } finally {
+      setSending(false);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
+    <div className="min-h-screen bg-gray-50 p-8 relative">
       <div className="max-w-6xl mx-auto">
         <h1 className="text-2xl font-bold mb-6 text-gray-800">
           Lot <span className="text-blue-600">{lot}</span> under Officer{" "}
@@ -101,6 +131,17 @@ export default function LotDetailsPage() {
           </div>
         )}
       </div>
+
+      {/* ✅ Floating Send to Print Button */}
+      {records.length > 0 && (
+        <button
+          onClick={handleSendToPrint}
+          disabled={sending}
+          className="fixed bottom-6 right-6 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl shadow-lg font-semibold transition"
+        >
+          {sending ? "Sending..." : "Send to Print"}
+        </button>
+      )}
     </div>
   );
 }
