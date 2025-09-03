@@ -640,19 +640,7 @@ const validateNameplateData = (nameplate: Nameplate): string[] => {
         <div className="mb-4">
           <p className="font-semibold mb-2">Text Color</p>
           <div className="space-y-3">
-            <div className="flex items-center gap-3">
-              <input
-                type="color"
-                value={activeNameplate.textColor}
-                onChange={(e) => updateActiveNameplate({ textColor: e.target.value })}
-                className="w-12 h-12 rounded-lg border-2 border-gray-300 cursor-pointer hover:border-indigo-400 transition-colors"
-                title="Pick custom color"
-              />
-              <div className="flex-1">
-                <p className="text-sm font-medium">Custom Color</p>
-                <p className="text-xs text-gray-500">{activeNameplate.textColor}</p>
-              </div>
-            </div>
+            
 
             <div>
               <p className="text-sm text-gray-600 mb-2">Quick Presets:</p>
