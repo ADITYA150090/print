@@ -25,8 +25,6 @@ if(!isPublicPath && !token){
 export const config = {
     matcher:[
         '/',
-        '/dashboard/profile',
-        '/dashboard/orm',
         '/login',
         '/register',
     ]

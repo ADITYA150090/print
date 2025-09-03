@@ -1,21 +1,43 @@
 import { NextRequest, NextResponse } from "next/server";
 
-// Example mock data for officers (replace with real DB later)
-const officerStats: Record<
-  string,
-  { unverified: number; verified: number; onTransit: number; totalDelivered: number }
-> = {
-  off11: { unverified: 550, verified: 500, onTransit: 300, totalDelivered: 50000 },
-  off12: { unverified: 120, verified: 400, onTransit: 150, totalDelivered: 32000 },
-  off13: { unverified: 80, verified: 250, onTransit: 100, totalDelivered: 18000 },
-};
+export async function GET(req: NextRequest) {
+  try {
+    // Dynamically get the base URL of the server
+    const baseUrl = `${req.nextUrl.protocol}//${req.nextUrl.host}`;
 
-export async function GET(req: NextRequest, { params }: { params: { officer: string } }) {
-  const { officer } = params;
+    // Fetch logged-in officer info
+    const res = await fetch(`${baseUrl}/api/auth/me`, {
+      headers: req.headers, // forward cookies/session
+    });
 
-  if (!officer || !officerStats[officer]) {
-    return NextResponse.json({ success: false, error: "Officer not found" }, { status: 404 });
+    const data = await res.json();
+
+    // Check if officer exists
+    if (!data.success || !data.user?.officerNumber) {
+      return NextResponse.json(
+        { success: false, error: "Officer not found" },
+        { status: 404 }
+      );
+    }
+
+    // Hardcoded stats
+    const stats = {
+      unverified: 550,
+      verified: 500,
+      onTransit: 300,
+      totalDelivered: 50000,
+    };
+
+    return NextResponse.json({
+      success: true,
+      officerNumber: data.user.officerNumber,
+      data: stats,
+    });
+  } catch (err: any) {
+    console.error("❌ GET /api/officerStats error:", err);
+    return NextResponse.json(
+      { success: false, error: err.message || "Internal server error" },
+      { status: 500 }
+    );
   }
-
-  return NextResponse.json({ success: true, data: officerStats[officer] });
 }

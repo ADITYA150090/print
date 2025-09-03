@@ -12,7 +12,7 @@ export default function OfficerDashboardPage({
   const router = useRouter();
 
   // Hardcoded officerId for now
-  const officerId = "off11"; 
+  const  = "off11"; 
 
   // Fake stats (can later be fetched from API)
   const [stats, setStats] = useState({
@@ -50,10 +50,10 @@ export default function OfficerDashboardPage({
   const handleActionClick = (action: string) => {
     switch (action) {
       case "createNameplate":
-        router.push(`/rmo/${params.rmo}/officers/${officerId}/lots/createNameplate`);
+        router.push(`/rmo/${params.rmo}/officers/${officer.officerNumber}/lots/createNameplate`);
         break;
       case "trackOrder":
-        router.push(`/rmo/${params.rmo}/officers/${officerId}/track-order`);
+        router.push(`/rmo/${params.rmo}/officers/${officer.officerNumber}/track-order`);
         break;
       default:
         break;
