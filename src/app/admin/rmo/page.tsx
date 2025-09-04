@@ -40,7 +40,7 @@ export default function RmoLandingPage() {
             {rmos.map((rmo) => (
               <Link
                 key={rmo}
-                href={`/rmo/${rmo}/officers`}
+                href={`/admin/rmo/${rmo}/officers`}
                 className="block p-6 bg-white rounded-2xl shadow hover:shadow-lg transition-shadow duration-200 border border-gray-100"
               >
                 <h2 className="text-lg font-semibold text-gray-800">{rmo}</h2>

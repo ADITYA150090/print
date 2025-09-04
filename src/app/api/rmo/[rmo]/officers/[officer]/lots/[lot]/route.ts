@@ -2,21 +2,21 @@ import { NextResponse } from "next/server";
 
 export async function GET(
   req: Request,
-  { params }: { params: { rmo: string; officer: string; lot: string } }
+  context: { params: Promise<{ rmo: string; officer: string; lot: string }> }
 ) {
-  const { rmo, officer, lot } = params;
+  // ✅ Await params before destructuring
+  const { rmo, officer, lot } = await context.params;
 
   try {
-    // Full URL to /api/unverify
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
-    const res = await fetch(`${baseUrl}/api/unverify`);
+    const { origin } = new URL(req.url);
+
+    const res = await fetch(`${origin}/api/unverify`);
     const data = await res.json();
 
     if (!data.success || !Array.isArray(data.data)) {
       return NextResponse.json({ success: false, records: [] });
     }
 
-    // Filter by RMO, officer, lot, and verified=false
     const records = data.data
       .filter(
         (item: any) =>
@@ -29,7 +29,7 @@ export async function GET(
         id: item._id,
         houseName: item.houseName,
         ownerName: item.ownerName,
-        spouseName: item.spouseName || "", // optional
+        spouseName: item.spouseName || "",
         address: item.address,
         imageUrl: item.image_url,
       }));

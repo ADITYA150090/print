@@ -7,7 +7,7 @@ export async function GET() {
     await connectDB();
 
     // Get unique RMOs (ignore null/empty values)
-    const rmos = await User.distinct("rmo", { rmo: { $ne: null, $ne: "" } });
+    const rmos = await User.distinct("rmo", { rmo: { $nin: [null, ""] } });
 
     return NextResponse.json({ success: true, rmos });
   } catch (error) {

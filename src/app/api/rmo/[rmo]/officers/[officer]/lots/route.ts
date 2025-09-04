@@ -2,13 +2,17 @@ import { NextResponse } from "next/server";
 
 export async function GET(
   req: Request,
-  { params }: { params: { rmo: string; officer: string } }
+  context: { params: Promise<{ rmo: string; officer: string }> } // 👈 params must be Promise
 ) {
-  const { rmo, officer } = params;
+  // ✅ Await params
+  const { rmo, officer } = await context.params;
 
   try {
-    // Fetch unverified lots from /api/unverify
-    const res = await fetch(`${req.url.split("/api/rmo/")[0]}/api/unverify`);
+    // Build base URL dynamically from the request
+    const { origin } = new URL(req.url);
+
+    // Fetch unverified lots
+    const res = await fetch(`${origin}/api/unverify`);
     const data = await res.json();
 
     if (!data.success || !Array.isArray(data.data)) {
@@ -18,7 +22,7 @@ export async function GET(
       );
     }
 
-    // Filter lots by RMO and officer number
+    // Filter by RMO + officer
     const filteredLots = data.data
       .filter((item: any) => item.rmo === rmo && item.officer === officer)
       .map((item: any) => ({

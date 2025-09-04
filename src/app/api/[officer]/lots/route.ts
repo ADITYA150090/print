@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { officer: string } }
+  context: { params: Promise<{ officer: string }> } // 👈 params ko Promise type do
 ) {
-  const { officer } = params;
-  const lot = req.nextUrl.searchParams.get("lot"); // get lot from query string
+  const { officer } = await context.params; // 👈 params ko await karo
+  const lot = req.nextUrl.searchParams.get("lot");
 
   try {
     const res = await fetch(`${req.nextUrl.origin}/api/unverify`);

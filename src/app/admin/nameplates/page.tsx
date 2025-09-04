@@ -152,7 +152,7 @@ export default function PrintNameplatePage() {
 
       {/* 🔍 Preview Modal */}
       {previewImage && (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
+       <div className="fixed inset-0 bg-black/40 backdrop-blur-md flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-2xl shadow-lg max-w-3xl w-full relative">
             <button
               onClick={() => setPreviewImage(null)}

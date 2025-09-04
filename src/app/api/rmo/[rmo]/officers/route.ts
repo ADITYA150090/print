@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
-
 import User from "@/models/User"; // your schema
 
 // GET all officers for a given RMO
 export async function GET(
   req: Request,
-  { params }: { params: { rmo: string } }
+  context: { params: Promise<{ rmo: string }> } // 👈 params is async
 ) {
-  const { rmo } = params;
+  // ✅ Await params
+  const { rmo } = await context.params;
 
   try {
     // connect to MongoDB

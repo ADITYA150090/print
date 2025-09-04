@@ -91,8 +91,8 @@ export default function LotDetailsPage() {
                   <th className="px-4 py-3">Owner Name</th>
                   <th className="px-4 py-3">Spouse Name</th>
                   <th className="px-4 py-3">Address</th>
-                  <th className="px-4 py-3">Preview</th>
-                  <th className="px-4 py-3">Select</th>
+                  {/* <th className="px-4 py-3">Preview</th> */}
+                  {/* <th className="px-4 py-3">Select</th> */}
                 </tr>
               </thead>
               <tbody>
@@ -103,17 +103,17 @@ export default function LotDetailsPage() {
                     <td className="px-4 py-3">{record.ownerName}</td>
                     <td className="px-4 py-3">{record.spouseName}</td>
                     <td className="px-4 py-3">{record.address}</td>
-                    <td className="px-4 py-3">
+                    {/* <td className="px-4 py-3">
                       <button
                         onClick={() => window.open(record.imageUrl, "_blank")}
                         className="px-3 py-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-xs"
                       >
                         Preview
                       </button>
-                    </td>
-                    <td className="px-4 py-3 text-center">
+                    </td> */}
+                    {/* <td className="px-4 py-3 text-center">
                       <input type="checkbox" className="w-4 h-4" />
-                    </td>
+                    </td> */}
                   </tr>
                 ))}
               </tbody>
