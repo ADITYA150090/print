@@ -1,21 +1,26 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-// simple in-memory storage
-let lotsByOfficer: Record<string, any[]> = {};
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { officer: string; lot: string } }
+) {
+  const { officer, lot } = params;
 
-export async function GET(req: Request) {
-  const url = new URL(req.url);
-  const officer = url.searchParams.get("officer")!;
-  return NextResponse.json(lotsByOfficer[officer] || []);
-}
+  try {
+    // Fetch all unverified nameplates
+    const res = await fetch(`${req.nextUrl.origin}/api/unverify`);
+    const data = await res.json();
 
-export async function POST(req: Request) {
-  const url = new URL(req.url);
-  const officer = url.searchParams.get("officer")!;
-  const newLot = await req.json();
+    // Filter for this officer and lot
+    const lotItems = (data.data || []).filter(
+      (item: any) =>
+        item.officer.toUpperCase() === officer.toUpperCase() &&
+        item.lot === lot
+    );
 
-  if (!lotsByOfficer[officer]) lotsByOfficer[officer] = [];
-  lotsByOfficer[officer].push(newLot);
-
-  return NextResponse.json(newLot, { status: 201 });
+    return NextResponse.json({ nameplates: lotItems });
+  } catch (err) {
+    console.error("Error fetching lot details:", err);
+    return NextResponse.json({ nameplates: [] });
+  }
 }

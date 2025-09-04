@@ -7,8 +7,6 @@ import { toBlob } from "html-to-image";
 
 import { useParams, useRouter } from "next/navigation";
 
-
-
 // ✅ Supabase client
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -31,7 +29,15 @@ const templates: Record<string, string[]> = {
   ],
 };
 
-// ✅ Updated Nameplate Interface with MongoDB fields
+// ✅ 4 Color Palette
+const COLOR_PRESETS = [
+  { name: "Gold", color: "#FFD700" },
+  { name: "red", color: "rgb(204, 0, 26)" },
+  { name: "White", color: "#FFFFFF" },
+  { name: "Black", color: "#000000" },
+];
+
+// ✅ Updated Nameplate Interface with individual text properties
 interface Nameplate {
   id: string;
   theme: "ambuja" | "acc";
@@ -39,13 +45,18 @@ interface Nameplate {
   houseName: string;
   ownerName: string;
   address: string;
-  textColor: string;
-  // New MongoDB fields
+  // Individual text properties
+  houseNameColor: string;
+  houseNameSize: number;
+  ownerNameColor: string;
+  ownerNameSize: number;
+  addressColor: string;
+  addressSize: number;
+  // MongoDB fields
   rmo: string;
   officer: string;
   lot: string;
   officer_name: string;
-  
   email: string;
   mobileNumber: string;
 }
@@ -56,7 +67,6 @@ interface NameplateDocument {
   officer: string;
   lot: string;
   officer_name: string;
-  
   email: string;
   mobileNumber: string;
   image_url: string;
@@ -74,35 +84,24 @@ interface ApiResponse {
   data?: any;
 }
 
-
-
 export default function Page() {
-   const params = useParams();   // ✅ returns an object
+  const params = useParams();
   const router = useRouter();
- 
 
-   const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-     console.log(params.lot)
     const fetchUser = async () => {
       try {
         const res = await fetch("/api/auth/me", {
           method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include", // ✅ important if you're using cookies/session
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
         });
-
-        if (!res.ok) {
-          throw new Error("Failed to fetch user");
-        }
-
+        if (!res.ok) throw new Error("Failed to fetch user");
         const data: User = await res.json();
-       
         setUser(data.user);
       } catch (err: any) {
         setError(err.message);
@@ -110,90 +109,100 @@ export default function Page() {
         setLoading(false);
       }
     };
-
     fetchUser();
   }, []);
 
-  console.log(user)
-  console.log(user?.rmo);
+  // ✅ Updated Initial State
+  const [nameplates, setNameplates] = useState<Nameplate[]>([
+    {
+      id: "1",
+      theme: "ambuja",
+      background: templates.ambuja[0],
+      houseName: "My Sweet Home",
+      ownerName: "Aditya Dhawle",
+      address: "Plot No. 21, Pune, India",
+      houseNameColor: "#FFD700",
+      houseNameSize: 18,
+      ownerNameColor: "#FFD700",
+      ownerNameSize: 40,
+      addressColor: "#FFD700",
+      addressSize: 18,
+      rmo: "",
+      officer: "",
+      lot: (params.lot as string) ?? "",
+      officer_name: "",
+      email: "",
+      mobileNumber: "",
+    },
+  ]);
 
+  // ✅ Active text field for editing - RE-ADDED
+  const [activeTextField, setActiveTextField] = useState<
+    "houseName" | "ownerName" | "address" | null
+  >(null);
 
-  // ✅ Updated Initial State with MongoDB fields
-const [nameplates, setNameplates] = useState<Nameplate[]>([
-  {
-    id: "1",
-    theme: "ambuja",
-    background: templates.ambuja[0],
-    houseName: "My Sweet Home",
-    ownerName: "Aditya Dhawle",
-    address: "Plot No. 21, Pune, India",
-    textColor: "#FFD700",
-    // Start with empty, update when user is fetched
-    rmo: "",
-    officer: "",
-    lot: (params.lot as string) ?? "",
-    officer_name: "",
-    email: "",
-    mobileNumber: "",
-  },
-]);
+  useEffect(() => {
+    if (user) {
+      setNameplates((prev) =>
+        prev.map((n) => ({
+          ...n,
+          rmo: user.rmo ?? "",
+          officer: user.officerNumber ?? "",
+          officer_name: user.officerName ?? "",
+          email: user.email ?? "",
+          mobileNumber: user.mobileNumber ?? "",
+        }))
+      );
+    }
+  }, [user]);
 
-useEffect(() => {
-  if (user) {
-    setNameplates(prev =>
-      prev.map(n => ({
-        ...n,
-        rmo: user.rmo ?? "",
-        officer: user.officerNumber ?? "",
-        officer_name: user.officerName ?? "",
-        email: user.email ?? "",
-        mobileNumber: user.mobileNumber ?? "",
-      }))
-    );
-  }
-}, [user]);
-
-  
   const [activeNameplateId, setActiveNameplateId] = useState("1");
   const [uploading, setUploading] = useState(false);
   const [lastError, setLastError] = useState<string | null>(null);
-
   const previewRef = useRef<HTMLDivElement>(null);
 
-  // ✅ Get Active Nameplate
-  const activeNameplate = nameplates.find(n => n.id === activeNameplateId) || nameplates[0];
+  const activeNameplate =
+    nameplates.find((n) => n.id === activeNameplateId) || nameplates[0];
 
-  // ✅ Update Active Nameplate
   const updateActiveNameplate = (updates: Partial<Nameplate>) => {
-    setNameplates(prev => 
-      prev.map(nameplate => 
-        nameplate.id === activeNameplateId 
+    setNameplates((prev) =>
+      prev.map((nameplate) =>
+        nameplate.id === activeNameplateId
           ? { ...nameplate, ...updates }
           : nameplate
       )
     );
   };
 
-  // ✅ Add New Nameplate
+  // Functions for addNewNameplate, deleteNameplate, duplicateNameplate, handleThemeChange, saveToMongoDB, validateNameplateData, handleSave, handleSaveAll remain the same as your original full code.
+  // ... (All other functions from your code are assumed to be here)
+   // ✅ Add New Nameplate
   const addNewNameplate = () => {
     const newId = Date.now().toString();
+
     const newNameplate: Nameplate = {
       id: newId,
-      theme: "ambuja",
-      background: templates.ambuja[0],
+      theme: activeNameplate.theme,
+      background: templates[activeNameplate.theme][0],
       houseName: "New House",
       ownerName: "Owner Name",
       address: "Address Here",
-      textColor: "#FFD700",
-      // Default MongoDB fields
-      rmo: "RMO1",
-      officer: "Officer1",
-      lot: "Lot1",
-      officer_name: "Officer Name",
-      
-      email: "officer@example.com",
-      mobileNumber: "0000000000",
+      // Default individual text properties
+      houseNameColor: "#FFD700",
+      houseNameSize: 18,
+      ownerNameColor: "#FFD700",
+      ownerNameSize: 40,
+      addressColor: "#FFD700",
+      addressSize: 18,
+      // Copy user details
+      rmo: activeNameplate.rmo,
+      officer: activeNameplate.officer,
+      lot: activeNameplate.lot,
+      officer_name: activeNameplate.officer_name,
+      email: activeNameplate.email,
+      mobileNumber: activeNameplate.mobileNumber,
     };
+
     setNameplates(prev => [...prev, newNameplate]);
     setActiveNameplateId(newId);
   };
@@ -243,43 +252,44 @@ useEffect(() => {
     try {
       setLastError(null);
 
-const mongoDocument = {
-  theme: nameplateData.theme,
-  background: nameplateData.background,
-  houseName: nameplateData.houseName,
-  ownerName: nameplateData.ownerName,
-  address: nameplateData.address,
-  textColor: nameplateData.textColor,
+      const mongoDocument = {
+        theme: nameplateData.theme,
+        background: nameplateData.background,
+        houseName: nameplateData.houseName,
+        ownerName: nameplateData.ownerName,
+        address: nameplateData.address,
+        // Save individual text properties
+        houseNameColor: nameplateData.houseNameColor,
+        houseNameSize: nameplateData.houseNameSize,
+        ownerNameColor: nameplateData.ownerNameColor,
+        ownerNameSize: nameplateData.ownerNameSize,
+        addressColor: nameplateData.addressColor,
+        addressSize: nameplateData.addressSize,
 
-  rmo: nameplateData.rmo,
-  officer: nameplateData.officer,
-  lot: nameplateData.lot,
-  officer_name: nameplateData.officer_name,
-  email: nameplateData.email,
+        rmo: nameplateData.rmo,
+        officer: nameplateData.officer,
+        lot: nameplateData.lot,
+        officer_name: nameplateData.officer_name,
+        email: nameplateData.email,
 
-  // Backend expects these exact names:
-  mobile_number: nameplateData.mobileNumber,
-  image_url: imageUrl, // 🔥 from Supabase
-  designation: nameplateData.officer_name, // or any value you want
-};
-
-
+        // Backend expects these exact names:
+        mobile_number: nameplateData.mobileNumber,
+        image_url: imageUrl, // 🔥 from Supabase
+        designation: nameplateData.officer_name, // or any value you want
+      };
 
       console.log('📤 Sending to MongoDB:', mongoDocument);
 
-const response = await fetch(
-  `/api/${nameplateData.officer}/lots/${nameplateData.lot}/createNameplate`,
-  {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(mongoDocument),
-  }
-);
-
-
-
+      const response = await fetch(
+        `/api/${nameplateData.officer}/lots/${nameplateData.lot}/createNameplate`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(mongoDocument),
+        }
+      );
 
       const responseText = await response.text();
       console.log('📥 Raw API Response:', responseText);
@@ -310,25 +320,23 @@ const response = await fetch(
     }
   };
 
-const validateNameplateData = (nameplate: Nameplate): string[] => {
-  const errors: string[] = [];
-  
-  if (!(nameplate.rmo ?? "").trim()) errors.push("RMO is required");
-  if (!(nameplate.officer ?? "").trim()) errors.push("Officer is required");
-  if (!(nameplate.lot ?? "").trim()) errors.push("Lot is required");
-  if (!(nameplate.officer_name ?? "").trim()) errors.push("Officer Name is required");
-  if (!(nameplate.email ?? "").trim()) errors.push("Email is required");
-  if (!(nameplate.mobileNumber ?? "").trim()) errors.push("Mobile Number is required");
+  const validateNameplateData = (nameplate: Nameplate): string[] => {
+    const errors: string[] = [];
+    
+    if (!(nameplate.rmo ?? "").trim()) errors.push("RMO is required");
+    if (!(nameplate.officer ?? "").trim()) errors.push("Officer is required");
+    if (!(nameplate.lot ?? "").trim()) errors.push("Lot is required");
+    if (!(nameplate.officer_name ?? "").trim()) errors.push("Officer Name is required");
+    if (!(nameplate.email ?? "").trim()) errors.push("Email is required");
+    if (!(nameplate.mobileNumber ?? "").trim()) errors.push("Mobile Number is required");
 
-  if ((nameplate.email ?? "").trim() && !/\S+@\S+\.\S+/.test(nameplate.email)) {
-    errors.push("Invalid email format");
-  }
+    if ((nameplate.email ?? "").trim() && !/\S+@\S+\.\S+/.test(nameplate.email)) {
+      errors.push("Invalid email format");
+    }
 
-  // imageUrl is optional during validation
-  return errors;
-};
-
-
+    // imageUrl is optional during validation
+    return errors;
+  };
 
   // ✅ FIXED: Updated handleSave with proper DOM update waiting
   const handleSave = async () => {
@@ -418,14 +426,15 @@ const validateNameplateData = (nameplate: Nameplate): string[] => {
     }
   };
 
-  // ✅ FIXED: Updated handleSaveAll with proper DOM update waiting
   const handleSaveAll = async () => {
     setUploading(true);
     setLastError(null);
     
     const results: { nameplate: string; success: boolean; error?: string; url?: string }[] = [];
     
-    for (const nameplate of nameplates) {
+    for (let i = 0; i < nameplates.length; i++) {
+      const nameplate = nameplates[i];
+      
       // Validate each nameplate
       const validationErrors = validateNameplateData(nameplate);
       if (validationErrors.length > 0) {
@@ -437,28 +446,77 @@ const validateNameplateData = (nameplate: Nameplate): string[] => {
         continue;
       }
 
-      // Switch to this nameplate
-      setActiveNameplateId(nameplate.id);
-      
-      // 🔥 CRITICAL FIX: Wait longer for UI to update and images to load
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
+      console.log(`🎯 Processing nameplate ${i + 1}/${nameplates.length}:`, nameplate.officer_name);
+      console.log('🖼️ Expected background:', nameplate.background);
+
       try {
-        if (!previewRef.current) continue;
+        // 🔥 STEP 1: Switch to this nameplate
+        setActiveNameplateId(nameplate.id);
         
-        // Wait for images to load
-        const images = previewRef.current.querySelectorAll('img');
-        await Promise.all(
-          Array.from(images).map(img => {
-            if (img.complete) return Promise.resolve();
-            return new Promise((resolve, reject) => {
-              img.onload = resolve;
-              img.onerror = reject;
-              setTimeout(resolve, 1000); // Fallback
-            });
-          })
-        );
+        // 🔥 STEP 2: Wait for React to re-render
+        await new Promise(resolve => setTimeout(resolve, 300));
         
+        if (!previewRef.current) {
+          throw new Error('Preview ref not available');
+        }
+
+        // 🔥 STEP 3: FORCE background image to reload by updating the Image component
+        const imageElement = previewRef.current.querySelector('img') as HTMLImageElement;
+        if (imageElement) {
+          console.log('🔄 Current image src before update:', imageElement.src);
+          
+          // Create a promise that resolves when the correct image loads
+          const waitForCorrectImage = new Promise<void>((resolve, reject) => {
+            const targetBackground = nameplate.background;
+            let attempts = 0;
+            const maxAttempts = 10;
+            
+            const checkImage = () => {
+              attempts++;
+              console.log(`🔍 Attempt ${attempts}: Checking if image matches ${targetBackground}`);
+              console.log('📷 Current image src:', imageElement.src);
+              
+              // Check if the current image src contains our target background
+              const isCorrectImage = imageElement.src.includes(targetBackground.replace('/backgrounds/', ''));
+              
+              if (isCorrectImage && imageElement.complete && imageElement.naturalHeight > 0) {
+                console.log('✅ Correct image loaded!');
+                resolve();
+              } else if (attempts >= maxAttempts) {
+                console.log('⚠️ Max attempts reached, proceeding anyway');
+                resolve();
+              } else {
+                console.log('⏳ Image not ready yet, waiting...');
+                setTimeout(checkImage, 200);
+              }
+            };
+            
+            // Force image reload
+            imageElement.src = '';
+            imageElement.onload = () => {
+              console.log('🎉 Image onload triggered for:', imageElement.src);
+              checkImage();
+            };
+            imageElement.onerror = () => {
+              console.error('❌ Image failed to load');
+              reject(new Error('Image failed to load'));
+            };
+            imageElement.src = nameplate.background;
+            
+            // Start checking immediately in case image loads synchronously
+            setTimeout(checkImage, 100);
+          });
+          
+          // Wait for the correct image to load
+          await waitForCorrectImage;
+          
+          // 🔥 STEP 4: Additional wait to ensure DOM is fully updated
+          await new Promise(resolve => setTimeout(resolve, 500));
+          
+          console.log('📸 About to capture image with background:', imageElement.src);
+        }
+        
+        // 🔥 STEP 5: Capture the image
         const blob = await toBlob(previewRef.current, {
           backgroundColor: "white",
           quality: 0.95,
@@ -466,41 +524,59 @@ const validateNameplateData = (nameplate: Nameplate): string[] => {
           skipFonts: false,
           useCORS: true,
           allowTaint: true,
+          filter: (node) => {
+            if (node instanceof HTMLImageElement) {
+              console.log('🎯 Capturing image node:', node.src);
+            }
+            return true;
+          }
         });
 
-        if (blob) {
-          const fileName = `nameplate-${nameplate.officer_name.replace(/[^a-zA-Z0-9]/g, '_')}-${Date.now()}.png`;
-          const { data, error } = await supabase.storage
-            .from("Nameplate")
-            .upload(fileName, blob, { upsert: false });
-            
-          if (!error) {
-            const { data: urlData } = supabase.storage
-              .from("Nameplate")
-              .getPublicUrl(fileName);
-            
-            const mongoResult = await saveToMongoDB(nameplate, urlData.publicUrl);
-            
-            results.push({
-              nameplate: nameplate.officer_name,
-              success: mongoResult.success,
-              error: mongoResult.error,
-              url: urlData.publicUrl
-            });
-          } else {
-            results.push({
-              nameplate: nameplate.officer_name,
-              success: false,
-              error: `Supabase error: ${error.message}`
-            });
-          }
+        if (!blob) {
+          throw new Error('Failed to generate image blob');
         }
+
+        console.log('✅ Image blob generated successfully');
+
+        // 🔥 STEP 6: Upload to Supabase
+        const fileName = `nameplate-${nameplate.officer_name.replace(/[^a-zA-Z0-9]/g, '_')}-${Date.now()}.png`;
+        const { data, error } = await supabase.storage
+          .from("Nameplate")
+          .upload(fileName, blob, { upsert: false });
+          
+        if (error) {
+          throw new Error(`Supabase upload failed: ${error.message}`);
+        }
+
+        // Get public URL
+        const { data: urlData } = supabase.storage
+          .from("Nameplate")
+          .getPublicUrl(fileName);
+        
+        console.log('📤 Uploaded to:', urlData.publicUrl);
+        
+        // 🔥 STEP 7: Save to MongoDB
+        const mongoResult = await saveToMongoDB(nameplate, urlData.publicUrl);
+        
+        results.push({
+          nameplate: nameplate.officer_name,
+          success: mongoResult.success,
+          error: mongoResult.error,
+          url: urlData.publicUrl
+        });
+
       } catch (err: any) {
+        console.error(`❌ Error processing ${nameplate.officer_name}:`, err);
         results.push({
           nameplate: nameplate.officer_name,
           success: false,
           error: err.message || 'Unknown error'
         });
+      }
+      
+      // Small delay between nameplates
+      if (i < nameplates.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, 200));
       }
     }
     
@@ -517,16 +593,21 @@ const validateNameplateData = (nameplate: Nameplate): string[] => {
       message += `\n❌ Failed:\n${failedResults.map(r => `• ${r.nameplate}: ${r.error}`).join('\n')}`;
     }
     
+    const successfulUploads = results.filter(r => r.success && r.url);
+    if (successfulUploads.length > 0) {
+      message += `\n\n🔗 Uploaded Files:\n${successfulUploads.map(r => `• ${r.nameplate}`).join('\n')}`;
+    }
+    
     alert(message);
   };
-
+  
   return (
     <div className="flex min-h-screen bg-gray-100">
       {/* Sidebar */}
       <div className="w-1/3 bg-white text-black shadow-lg p-6 space-y-4 overflow-y-auto">
         <h2 className="text-xl font-bold">🎨 Nameplate Designer</h2>
 
-        {/* Error Display */}
+        {/* ... Error Display and Nameplate Management sections ... */}
         {lastError && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-3">
             <h4 className="font-semibold text-red-800 text-sm">❌ Last Error:</h4>
@@ -540,7 +621,6 @@ const validateNameplateData = (nameplate: Nameplate): string[] => {
           </div>
         )}
 
-        {/* Nameplate Management */}
         <div className="border-b pb-4">
           <div className="flex items-center justify-between mb-2">
             <p className="font-semibold">Nameplates ({nameplates.length})</p>
@@ -553,74 +633,6 @@ const validateNameplateData = (nameplate: Nameplate): string[] => {
           </div>
         </div>
 
-        {/* MongoDB Fields Section */}
-        <div className="border rounded-lg p-4 bg-gray-50">
-          <h3 className="font-semibold text-gray-800 mb-3">📋 Officer Details</h3>
-          
-          <div className="grid grid-cols-2 gap-3 mb-3">
-            <div>
-              <label className="text-xs text-gray-600">RMO *</label>
-              <input
-                type="text"
-                value={activeNameplate.rmo}
-                onChange={(e) => updateActiveNameplate({ rmo: e.target.value })}
-                className="w-full border rounded p-2 text-sm"
-                placeholder="RMO1"
-                required
-              />
-            </div>
-            <div>
-              <label className="text-xs text-gray-600">Officer *</label>
-              <input
-                type="text"
-                value={activeNameplate.officer}
-                onChange={(e) => updateActiveNameplate({ officer: e.target.value })}
-                className="w-full border rounded p-2 text-sm"
-                placeholder="Officer1"
-                required
-              />
-            </div>
-          </div>
-
-          <div className="mb-3">
-            <label className="text-xs text-gray-600">Lot *</label>
-            <input
-              type="text"
-              value={activeNameplate.lot}
-              onChange={(e) => updateActiveNameplate({ lot: e.target.value })}
-              className="w-full border rounded p-2 text-sm"
-              placeholder="Lot1"
-              required
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-xs text-gray-600">Email *</label>
-              <input
-                type="email"
-                value={activeNameplate.email}
-                onChange={(e) => updateActiveNameplate({ email: e.target.value })}
-                className="w-full border rounded p-2 text-sm"
-                placeholder="john@example.com"
-                required
-              />
-            </div>
-            <div>
-              <label className="text-xs text-gray-600">Mobile *</label>
-              <input
-                type="text"
-                value={activeNameplate.mobileNumber}
-                onChange={(e) => updateActiveNameplate({ mobileNumber: e.target.value })}
-                className="w-full border rounded p-2 text-sm"
-                placeholder="1234567890"
-                required
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Theme Selection */}
         <p className="font-semibold">Select Theme</p>
         <div className="flex gap-3 mb-4">
           {(["ambuja", "acc"] as const).map((t) => (
@@ -628,7 +640,9 @@ const validateNameplateData = (nameplate: Nameplate): string[] => {
               key={t}
               onClick={() => handleThemeChange(t)}
               className={`px-4 py-2 rounded ${
-                activeNameplate.theme === t ? "bg-indigo-600 text-white" : "bg-gray-200"
+                activeNameplate.theme === t
+                  ? "bg-indigo-600 text-white"
+                  : "bg-gray-200"
               }`}
             >
               {t.toUpperCase()}
@@ -636,45 +650,112 @@ const validateNameplateData = (nameplate: Nameplate): string[] => {
           ))}
         </div>
 
-        {/* Text Color Selection */}
+        {/* ✅ DYNAMIC TEXT EDITING PANEL */}
         <div className="mb-4">
-          <p className="font-semibold mb-2">Text Color</p>
-          <div className="space-y-3">
-            
-
-            <div>
-              <p className="text-sm text-gray-600 mb-2">Quick Presets:</p>
-              <div className="flex flex-wrap gap-2">
-                {[
-                  { name: "Gold", color: "#FFD700" },
-                  { name: "Silver", color: "#C0C0C0" },
-                  { name: "Rose Gold", color: "#E8B4B8" },
-                  { name: "Blue", color: "#4F46E5" },
-                  { name: "Green", color: "#059669" },
-                  { name: "Purple", color: "#7C3AED" },
-                  { name: "Red", color: "#DC2626" },
-                  { name: "White", color: "#FFFFFF" },
-                  { name: "Black", color: "#000000" },
-                ].map((preset) => (
-                  <button
-                    key={preset.name}
-                    onClick={() => updateActiveNameplate({ textColor: preset.color })}
-                    className={`w-8 h-8 rounded-full border-2 hover:scale-110 transition-transform ${
-                      activeNameplate.textColor === preset.color
-                        ? "border-indigo-500 ring-2 ring-indigo-200"
-                        : "border-gray-300"
-                    }`}
-                    style={{ backgroundColor: preset.color }}
-                    title={preset.name}
-                  />
-                ))}
+          <p className="font-semibold mb-2">Text Editing</p>
+          
+          {activeTextField && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
+              <p className="text-sm font-semibold text-blue-800 mb-2">
+                Editing:{" "}
+                {activeTextField === "houseName"
+                  ? "House Name"
+                  : activeTextField === "ownerName"
+                  ? "Owner Name"
+                  : "Address"}
+              </p>
+              
+              {/* Color Selection for Active Field */}
+              <div className="mb-3">
+                <p className="text-xs text-gray-600 mb-2">Color:</p>
+                <div className="flex gap-2">
+                  {COLOR_PRESETS.map((preset) => {
+                    const currentColor =
+                      activeTextField === "houseName"
+                        ? activeNameplate.houseNameColor
+                        : activeTextField === "ownerName"
+                        ? activeNameplate.ownerNameColor
+                        : activeNameplate.addressColor;
+                    
+                    return (
+                      <button
+                        key={preset.name}
+                        onClick={() => {
+                          if (activeTextField === "houseName") {
+                            updateActiveNameplate({ houseNameColor: preset.color });
+                          } else if (activeTextField === "ownerName") {
+                            updateActiveNameplate({ ownerNameColor: preset.color });
+                          } else {
+                            updateActiveNameplate({ addressColor: preset.color });
+                          }
+                        }}
+                        className={`w-8 h-8 rounded-full border-2 hover:scale-110 transition-transform ${
+                          currentColor === preset.color
+                            ? "border-indigo-500 ring-2 ring-indigo-200"
+                            : "border-gray-300"
+                        }`}
+                        style={{ backgroundColor: preset.color }}
+                        title={preset.name}
+                      />
+                    );
+                  })}
+                </div>
               </div>
+
+              {/* Font Size Selection for Active Field */}
+              <div className="mt-4">
+                <label className="block text-sm font-medium">
+                  Font Size:{" "}
+                  {activeTextField === "houseName"
+                    ? activeNameplate.houseNameSize
+                    : activeTextField === "ownerName"
+                    ? activeNameplate.ownerNameSize
+                    : activeNameplate.addressSize}{" "}
+                  px
+                </label>
+                <input
+                  type="range"
+                  min="12"
+                  max="72"
+                  value={
+                    activeTextField === "houseName"
+                      ? activeNameplate.houseNameSize
+                      : activeTextField === "ownerName"
+                      ? activeNameplate.ownerNameSize
+                      : activeNameplate.addressSize
+                  }
+                  onChange={(e) => {
+                    const newSize = Number(e.target.value);
+                    if (activeTextField === "houseName") {
+                      updateActiveNameplate({ houseNameSize: newSize });
+                    } else if (activeTextField === "ownerName") {
+                      updateActiveNameplate({ ownerNameSize: newSize });
+                    } else if (activeTextField === "address") {
+                      updateActiveNameplate({ addressSize: newSize });
+                    }
+                  }}
+                  className="w-full"
+                />
+              </div>
+
+              <button
+                onClick={() => setActiveTextField(null)}
+                className="text-xs text-blue-600 hover:text-blue-800 mt-3"
+              >
+                ✕ Done Editing
+              </button>
             </div>
-          </div>
+          )}
+
+          {!activeTextField && (
+            <p className="text-xs text-gray-500 mb-2">
+              Click on a text input below to edit its color and size.
+            </p>
+          )}
         </div>
 
-        {/* Template Selection */}
-        <div className="mb-4">
+        {/* ... Template Selection section ... */}
+         <div className="mb-4">
           <p className="font-semibold mb-2">Choose Template</p>
           <p className="text-xs text-gray-600 mb-3">🔥 Current: {activeNameplate.background}</p>
           <div className="grid grid-cols-2 gap-2">
@@ -708,39 +789,62 @@ const validateNameplateData = (nameplate: Nameplate): string[] => {
           </div>
         </div>
 
-        {/* Display Inputs */}
+        {/* ✅ UPDATED DISPLAY INPUTS with onFocus */}
         <div className="border-t pt-4">
           <h3 className="font-semibold text-gray-800 mb-3">🎨 Display Settings</h3>
           <div className="mb-3">
-            <label className="text-xs text-gray-600">Officer Name *</label>
+            <label className="text-xs text-gray-600">Owner Name *</label>
             <input
               type="text"
               value={activeNameplate.officer_name}
-              onChange={(e) => updateActiveNameplate({ 
-                officer_name: e.target.value,
-                ownerName: e.target.value // Sync with display name
-              })}
-              className="w-full border rounded p-2 text-sm"
+              onChange={(e) =>
+                updateActiveNameplate({
+                  officer_name: e.target.value,
+                  ownerName: e.target.value,
+                })
+              }
+              onFocus={() => setActiveTextField("ownerName")}
+              className={`w-full border rounded p-2 text-sm transition-all ${
+                activeTextField === "ownerName"
+                  ? "border-blue-500 ring-1 ring-blue-200"
+                  : "border-gray-300"
+              }`}
               placeholder="John Doe"
               required
             />
           </div>
-          <input
-            type="text"
-            placeholder="House Name (Display)"
-            value={activeNameplate.houseName}
-            onChange={(e) => updateActiveNameplate({ houseName: e.target.value })}
-            className="w-full border rounded p-2 mb-2"
-          />
-          <textarea
-            placeholder="Address"
-            value={activeNameplate.address}
-            onChange={(e) => updateActiveNameplate({ address: e.target.value })}
-            className="w-full border rounded p-2 mb-4"
-          />
+          <div className="mb-3">
+            <label className="text-xs text-gray-600">House Name</label>
+            <input
+              type="text"
+              placeholder="House Name (Display)"
+              value={activeNameplate.houseName}
+              onChange={(e) => updateActiveNameplate({ houseName: e.target.value })}
+              onFocus={() => setActiveTextField("houseName")}
+              className={`w-full border rounded p-2 text-sm transition-all ${
+                activeTextField === "houseName"
+                  ? "border-blue-500 ring-1 ring-blue-200"
+                  : "border-gray-300"
+              }`}
+            />
+          </div>
+          <div className="mb-3">
+            <label className="text-xs text-gray-600">Address</label>
+            <textarea
+              placeholder="Address"
+              value={activeNameplate.address}
+              onChange={(e) => updateActiveNameplate({ address: e.target.value })}
+              onFocus={() => setActiveTextField("address")}
+              className={`w-full border rounded p-2 text-sm transition-all ${
+                activeTextField === "address"
+                  ? "border-blue-500 ring-1 ring-blue-200"
+                  : "border-gray-300"
+              }`}
+            />
+          </div>
         </div>
-
-        {/* Action Buttons */}
+        
+        {/* ... Action Buttons and the rest of the component ... */}
         <div className="space-y-2">
           <button
             onClick={handleSave}
@@ -759,15 +863,14 @@ const validateNameplateData = (nameplate: Nameplate): string[] => {
           </button>
         </div>
       </div>
-
-      {/* Preview */}
+      
+      {/* Preview Section */}
       <div className="flex-1 flex flex-col items-center justify-center p-6">
-        {/* Current Nameplate Preview */}
+        {/* ... Same preview and thumbnail grid as before ... */}
         <div
           ref={previewRef}
           className="relative w-[600px] h-[400px] rounded-xl shadow-2xl overflow-hidden font-sans mb-6"
         >
-          {/* 🔥 CRITICAL FIX: Added key prop to force re-render when background changes */}
           <Image 
             key={`${activeNameplate.id}-${activeNameplate.background}`}
             src={activeNameplate.background} 
@@ -778,30 +881,40 @@ const validateNameplateData = (nameplate: Nameplate): string[] => {
             onLoad={() => console.log('🖼️ Background image loaded:', activeNameplate.background)}
           />
 
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 space-y-2">
+          <div className="absolute inset-0  px-6 space-y-2">
             <h1
-              className="text-4xl font-bold drop-shadow-lg font-[Great_Vibes]"
-              style={{ color: activeNameplate.textColor }}
+              className="absolute text-lg font-bold drop-shadow-lg font-[Great_Vibes] top-10 right-20"
+              style={{ 
+                color: activeNameplate.houseNameColor,
+                fontSize: `${activeNameplate.houseNameSize}px`
+              }}
             >
               {activeNameplate.houseName}
             </h1>
             <p
-              className="text-2xl drop-shadow-lg font-[Dancing_Script]"
-              style={{ color: activeNameplate.textColor }}
+              className="absolute drop-shadow-lg font-[Dancing_Script] top-[50%] right-[50%] whitespace-nowrap"
+              style={{ 
+                color: activeNameplate.ownerNameColor,
+                fontSize: `${activeNameplate.ownerNameSize}px`,
+                transform: 'translate(50%, -50%)'
+              }}
             >
               {activeNameplate.officer_name}
             </p>
             
             <p
-              className="text-lg drop-shadow-lg font-[Dancing_Script]"
-              style={{ color: activeNameplate.textColor }}
+              className="absolute drop-shadow-lg font-[Dancing_Script] bottom-10 right-[50%]"
+              style={{ 
+                color: activeNameplate.addressColor,
+                fontSize: `${activeNameplate.addressSize}px`,
+                transform: 'translateX(50%)'
+              }}
             >
               {activeNameplate.address}
             </p>
           </div>
         </div>
 
-        {/* Nameplate Thumbnails Grid */}
         <div className="w-full max-w-4xl">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-800">All Nameplates</h3>
@@ -830,13 +943,13 @@ const validateNameplateData = (nameplate: Nameplate): string[] => {
                   <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-2">
                     <h4 
                       className="text-xs font-bold drop-shadow truncate w-full"
-                      style={{ color: nameplate.textColor }}
+                      style={{ color: nameplate.houseNameColor }}
                     >
                       {nameplate.houseName}
                     </h4>
                     <p 
                       className="text-xs drop-shadow truncate w-full"
-                      style={{ color: nameplate.textColor }}
+                      style={{ color: nameplate.ownerNameColor }}
                     >
                       {nameplate.officer_name}
                     </p>
