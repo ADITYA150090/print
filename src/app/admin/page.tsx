@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function DashboardPage() {
   const [officers, setOfficers] = useState(0);
   const [rmos, setRmos] = useState(0);
   const [nameplates, setNameplates] = useState(0);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -55,19 +57,28 @@ export default function DashboardPage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
             {/* Officers */}
-            <div className="p-6 bg-white rounded-2xl shadow hover:shadow-lg border border-gray-100 transition transform hover:-translate-y-1">
+            {/* <div
+              onClick={() => router.push("/admin/officers")}
+              className="cursor-pointer p-6 bg-white rounded-2xl shadow hover:shadow-lg border border-gray-100 transition transform hover:-translate-y-1"
+            >
               <h2 className="text-lg font-semibold text-gray-600">Total Officers</h2>
               <p className="text-3xl font-bold text-blue-600 mt-2">{officers}</p>
-            </div>
+            </div> */}
 
             {/* RMOs */}
-            <div className="p-6 bg-white rounded-2xl shadow hover:shadow-lg border border-gray-100 transition transform hover:-translate-y-1">
+            <div
+              onClick={() => router.push("/admin/rmo")}
+              className="cursor-pointer p-6 bg-white rounded-2xl shadow hover:shadow-lg border border-gray-100 transition transform hover:-translate-y-1"
+            >
               <h2 className="text-lg font-semibold text-gray-600">Total RMOs</h2>
               <p className="text-3xl font-bold text-green-600 mt-2">{rmos}</p>
             </div>
 
             {/* Nameplates */}
-            <div className="p-6 bg-white rounded-2xl shadow hover:shadow-lg border border-gray-100 transition transform hover:-translate-y-1">
+            <div
+              onClick={() => router.push("/admin/nameplates")}
+              className="cursor-pointer p-6 bg-white rounded-2xl shadow hover:shadow-lg border border-gray-100 transition transform hover:-translate-y-1"
+            >
               <h2 className="text-lg font-semibold text-gray-600">Nameplates to Print</h2>
               <p className="text-3xl font-bold text-purple-600 mt-2">{nameplates}</p>
             </div>

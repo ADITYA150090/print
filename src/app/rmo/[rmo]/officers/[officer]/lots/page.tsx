@@ -57,8 +57,8 @@ export default function OfficerLotsPage() {
                 onClick={() => router.push(`/rmo/${rmo}/officers/${officer}/lots/${lot.id}`)}
                 className="w-full text-left p-6 bg-white rounded-2xl shadow hover:shadow-lg border border-gray-100 transition transform hover:-translate-y-1"
               >
-                <p className="text-lg font-semibold text-gray-700">{lot.name}</p>
-                <p className="text-sm text-gray-500 mt-1">ID: {lot.id}</p>
+                <p className="text-lg font-semibold text-gray-700">{lot.id}</p>
+                <p className="text-sm text-gray-500 mt-1">ID: {lot.name}</p>
               </button>
             ))}
           </div>

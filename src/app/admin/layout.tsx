@@ -13,11 +13,10 @@ export default function DashboardLayout({
 
   // ✅ Customize menu here (different roles can have different menus)
   const menuItems = [
-    { name: "Dashboard", icon: <BarChart2 size={20} />, route: "/dashboard" },
-    { name: "All RMO", icon: <Users size={20} />, route: "/dashboard/officers" },
-    { name: "nitin", icon: <FileText size={20} />, route: "/dashboard/billing" },
-    { name: "Notification", icon: <Bell size={20} />, route: "/dashboard/notification" },
-    { name: "Profile", icon: <User size={20} />, route: "/dashboard/profile" },
+    { name: "Dashboard", icon: <BarChart2 size={20} />, route: "/admin" },
+    { name: "All RMO", icon: <Users size={20} />, route: "/admin/rmo" },
+    { name: "Print", icon: <FileText size={20} />, route: "/admin/nameplates" },
+    // { name: "Notification", icon: <Bell size={20} />, route: "/" }
   ];
 
   return (
