@@ -4,49 +4,50 @@ import type { NextRequest } from "next/server";
 export function middleware(req: NextRequest) {
   const path = req.nextUrl.pathname;
 
-  // --- Skip middleware for static files and API routes ---
+  // --- Skip static files and API routes ---
   if (
-    path.startsWith("/_next/") ||  // Next.js assets
+    path.startsWith("/_next/") ||
     path.startsWith("/favicon.ico") ||
     path.startsWith("/public/") ||
-    path.startsWith("/api/")       // <-- Exclude API routes
+    path.startsWith("/api/")
   ) {
     return;
   }
 
-  // --- Define public paths ---
-  const publicPaths = ["/login", "/register"];
-
   // Get token from cookies
   const token = req.cookies.get("token")?.value || "";
 
-  // Redirect logged-in users away from public pages
-  if (publicPaths.includes(path) && token) {
-    return NextResponse.redirect(new URL("/", req.nextUrl));
+  // Public paths
+  const publicPaths = ["/login", "/register"];
+
+  // --- Logic for non-logged-in users ---
+  if (!token) {
+    // Guests can access /, /login, /register
+    if (path === "/" || publicPaths.includes(path)) {
+      return;
+    }
+    // All other paths require login
+    return NextResponse.redirect(new URL("/login", req.nextUrl));
   }
 
-  // --- Protect private paths ---
-  const protectedPaths = [
-    "/",        // Home page
-    "/admin",   // Admin
-    "/rmo",     // RMO
-  ];
-
-  // Dynamic protected routes (e.g., /rmo/anything or /officer/anything)
-  const isDynamicProtected = path.startsWith("/rmo") || /^\/[^/]+/.test(path);
-
-  if (!publicPaths.includes(path) && !token && (protectedPaths.includes(path) || isDynamicProtected)) {
-    return NextResponse.redirect(new URL("/login", req.nextUrl));
+  // --- Logic for logged-in users ---
+  if (token) {
+    // Redirect logged-in users away from /, /login, /register
+    if (path === "/" || publicPaths.includes(path)) {
+      return NextResponse.redirect(new URL("/rmo", req.nextUrl)); // dashboard
+    }
+    // Otherwise allow access to private routes
+    return;
   }
 }
 
 // --- Apply middleware only to relevant paths ---
 export const config = {
   matcher: [
-    "/",               // Home
-    "/admin",          // Admin
-    "/rmo/:path*",     // RMO and all subpaths
-    "/:officer/:path*",// Dynamic officer routes
+    "/",               
+    "/admin",          
+    "/rmo/:path*",     
+    "/:officer/:path*", 
     "/login",
     "/register",
   ],
