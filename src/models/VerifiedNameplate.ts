@@ -17,7 +17,7 @@ const VerifiedNameplateSchema: Schema = new Schema(
     rmo: { type: String, required: true },
     officerId: { type: String, required: false},
     lot: { type: String, required: true },
-    houseName: { type: String, required: true },
+    houseName: { type: String },
     ownerName: { type: String, required: true },
     spouseName: { type: String },
     address: { type: String },

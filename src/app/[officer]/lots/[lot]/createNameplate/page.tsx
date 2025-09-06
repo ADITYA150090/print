@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
 import { createClient } from "@supabase/supabase-js";
 import { toBlob } from "html-to-image";
 import { useParams, useRouter } from "next/navigation";
+import {Tangerine} from 'next/font/google';
+
+const tangerine = Tangerine({ subsets: ['latin'], weight: ['400', '700'] , variable: '--font-tangerine'});
 
 // ✅ Environment variables with fallbacks and validation
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -98,7 +100,7 @@ const createDefaultNameplate = (id: string, lot?: string): Nameplate => ({
   id,
   theme: "ambuja",
   background: templates.ambuja[0],
-  houseName: "My Sweet Home",
+  houseName: "", // ✅ Changed: Default to empty string instead of "My Sweet Home"
   ownerName: "Sample Name",
   address: "Plot No. 21, Pune, India",
   houseNameColor: "#FFD700",
@@ -125,6 +127,7 @@ export default function NameplateDesigner() {
   const [error, setError] = useState<string | null>(null);
   const [lastError, setLastError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [backgroundLoading, setBackgroundLoading] = useState(false);
   
   const [nameplates, setNameplates] = useState<Nameplate[]>(() => [
     createDefaultNameplate("1", params.lot as string)
@@ -193,57 +196,7 @@ export default function NameplateDesigner() {
       )
     );
   };
-
-  const addNewNameplate = () => {
-    const newId = Date.now().toString();
-    const newNameplate = createDefaultNameplate(newId, activeNameplate.lot);
-    
-    // Copy user details from active nameplate
-    const newNameplateWithUserData: Nameplate = {
-      ...newNameplate,
-      theme: activeNameplate.theme,
-      rmo: activeNameplate.rmo,
-      officer: activeNameplate.officer,
-      lot: activeNameplate.lot,
-      officer_name: activeNameplate.officer_name,
-      email: activeNameplate.email,
-      mobileNumber: activeNameplate.mobileNumber,
-    };
-
-    setNameplates(prev => [...prev, newNameplateWithUserData]);
-    setActiveNameplateId(newId);
-  };
-
-  const deleteNameplate = (id: string) => {
-    if (nameplates.length === 1) {
-      alert("At least one nameplate is required!");
-      return;
-    }
-    
-    setNameplates(prev => prev.filter(n => n.id !== id));
-    
-    if (id === activeNameplateId) {
-      const remaining = nameplates.filter(n => n.id !== id);
-      setActiveNameplateId(remaining[0]?.id || "");
-    }
-  };
-
-  const duplicateNameplate = (id: string) => {
-    const original = nameplates.find(n => n.id === id);
-    if (!original) return;
-
-    const newId = Date.now().toString();
-    const duplicated: Nameplate = {
-      ...original,
-      id: newId,
-      houseName: original.houseName + " (Copy)",
-      officer_name: original.officer_name + " (Copy)",
-    };
-    
-    setNameplates(prev => [...prev, duplicated]);
-    setActiveNameplateId(newId);
-  };
-
+  
   const handleThemeChange = (newTheme: "ambuja" | "acc") => {
     updateActiveNameplate({
       theme: newTheme,
@@ -251,7 +204,14 @@ export default function NameplateDesigner() {
     });
   };
 
-  // ✅ Validation with better error messages
+  // ✅ Switch nameplate with delay to ensure DOM updates
+  const switchNameplate = async (id: string) => {
+    setActiveNameplateId(id);
+    // Wait for UI to update before processing
+    await new Promise(resolve => setTimeout(resolve, 100));
+  };
+
+  // ✅ UPDATED: Validation - houseName is now optional
   const validateNameplateData = (nameplate: Nameplate): string[] => {
     const errors: string[] = [];
     
@@ -261,6 +221,9 @@ export default function NameplateDesigner() {
     if (!nameplate.officer_name?.trim()) errors.push("Officer Name is required");
     if (!nameplate.email?.trim()) errors.push("Email is required");
     if (!nameplate.mobileNumber?.trim()) errors.push("Mobile Number is required");
+
+    // ✅ REMOVED: houseName validation - it's now optional
+    // House name can be empty, so no validation needed
 
     // Email validation
     if (nameplate.email?.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(nameplate.email)) {
@@ -275,7 +238,7 @@ export default function NameplateDesigner() {
     return errors;
   };
 
-  // ✅ MongoDB save with better error handling
+  // ✅ UPDATED: MongoDB save with optional houseName
   const saveToMongoDB = async (nameplateData: Nameplate, imageUrl: string): Promise<{ success: boolean; error?: string }> => {
     try {
       setLastError(null);
@@ -287,7 +250,7 @@ export default function NameplateDesigner() {
       const mongoDocument = {
         theme: nameplateData.theme,
         background: nameplateData.background,
-        houseName: nameplateData.houseName,
+        houseName: nameplateData.houseName || "", // ✅ Default to empty string if not provided
         ownerName: nameplateData.ownerName,
         address: nameplateData.address,
         houseNameColor: nameplateData.houseNameColor,
@@ -307,6 +270,7 @@ export default function NameplateDesigner() {
       };
 
       console.log('📤 Sending to MongoDB:', mongoDocument);
+      console.log('🎯 Background being saved:', nameplateData.background);
 
       const response = await fetch(
         `/api/${nameplateData.officer}/lots/${nameplateData.lot}/createNameplate`,
@@ -348,8 +312,10 @@ export default function NameplateDesigner() {
     }
   };
 
-  // ✅ Image generation with better error handling
-  const generateImage = async (element: HTMLDivElement): Promise<Blob> => {
+  // ✅ FIXED: Image generation now accepts specific nameplate data
+  const generateImage = async (element: HTMLDivElement, nameplateData: Nameplate): Promise<Blob> => {
+    console.log('🖼️ Generating image for nameplate:', nameplateData.officer_name, 'with background:', nameplateData.background);
+    
     // Wait for all images to load
     const images = element.querySelectorAll('img');
     await Promise.all(
@@ -381,6 +347,7 @@ export default function NameplateDesigner() {
       throw new Error("Failed to generate image blob");
     }
 
+    console.log('✅ Image blob generated successfully for:', nameplateData.officer_name);
     return blob;
   };
 
@@ -414,7 +381,7 @@ export default function NameplateDesigner() {
     }
   };
 
-  // ✅ Single save with comprehensive error handling
+  // ✅ FIXED: Single save uses correct nameplate data
   const handleSave = async () => {
     if (!previewRef.current) {
       alert("Preview element not found. Please try again.");
@@ -441,8 +408,8 @@ export default function NameplateDesigner() {
       // Wait for DOM to update
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      // Generate image
-      const blob = await generateImage(previewRef.current);
+      // Generate image with the correct nameplate data
+      const blob = await generateImage(previewRef.current, activeNameplate);
       console.log('✅ Image blob generated successfully');
 
       // Upload to Supabase
@@ -450,7 +417,7 @@ export default function NameplateDesigner() {
       const publicUrl = await uploadToSupabase(blob, fileName);
       console.log("✅ Supabase Upload Success:", publicUrl);
       
-      // Save to MongoDB
+      // Save to MongoDB with the correct nameplate data
       const mongoResult = await saveToMongoDB(activeNameplate, publicUrl);
       
       if (mongoResult.success) {
@@ -466,95 +433,6 @@ export default function NameplateDesigner() {
     } finally {
       setUploading(false);
     }
-  };
-
-  // ✅ Batch save with better progress tracking
-  const handleSaveAll = async () => {
-    if (!supabase) {
-      alert("❌ Upload service not available. Please check configuration.");
-      return;
-    }
-
-    setUploading(true);
-    setLastError(null);
-    
-    const results: { nameplate: string; success: boolean; error?: string; url?: string }[] = [];
-    
-    for (let i = 0; i < nameplates.length; i++) {
-      const nameplate = nameplates[i];
-      
-      // Validate each nameplate
-      const validationErrors = validateNameplateData(nameplate);
-      if (validationErrors.length > 0) {
-        results.push({
-          nameplate: nameplate.officer_name || `Nameplate ${i + 1}`,
-          success: false,
-          error: `Validation failed: ${validationErrors.join(', ')}`
-        });
-        continue;
-      }
-
-      console.log(`🎯 Processing nameplate ${i + 1}/${nameplates.length}:`, nameplate.officer_name);
-
-      try {
-        // Switch to this nameplate
-        setActiveNameplateId(nameplate.id);
-        await new Promise(resolve => setTimeout(resolve, 1000)); // Longer wait for batch processing
-        
-        if (!previewRef.current) {
-          throw new Error('Preview ref not available');
-        }
-
-        // Generate and upload image
-        const blob = await generateImage(previewRef.current);
-        const fileName = `nameplate-${nameplate.officer_name.replace(/[^a-zA-Z0-9]/g, '_')}-${Date.now()}.png`;
-        const publicUrl = await uploadToSupabase(blob, fileName);
-        console.log('📤 Uploaded to:', publicUrl);
-        
-        // Save to MongoDB
-        const mongoResult = await saveToMongoDB(nameplate, publicUrl);
-        
-        results.push({
-          nameplate: nameplate.officer_name || `Nameplate ${i + 1}`,
-          success: mongoResult.success,
-          error: mongoResult.error,
-          url: publicUrl
-        });
-
-      } catch (err: any) {
-        console.error(`❌ Error processing ${nameplate.officer_name}:`, err);
-        results.push({
-          nameplate: nameplate.officer_name || `Nameplate ${i + 1}`,
-          success: false,
-          error: err.message || 'Unknown error'
-        });
-      }
-      
-      // Delay between nameplates to prevent overwhelming the system
-      if (i < nameplates.length - 1) {
-        await new Promise(resolve => setTimeout(resolve, 500));
-      }
-    }
-    
-    setUploading(false);
-    
-    const successCount = results.filter(r => r.success).length;
-    const failedResults = results.filter(r => !r.success);
-    
-    console.log("📊 Batch Results:", results);
-    
-    let message = `📊 Batch Upload Results:\n\n✅ Successful: ${successCount}/${nameplates.length}\n`;
-    
-    if (failedResults.length > 0) {
-      message += `\n❌ Failed:\n${failedResults.map(r => `• ${r.nameplate}: ${r.error}`).join('\n')}`;
-    }
-    
-    const successfulUploads = results.filter(r => r.success && r.url);
-    if (successfulUploads.length > 0) {
-      message += `\n\n🔗 Uploaded Files:\n${successfulUploads.map(r => `• ${r.nameplate}`).join('\n')}`;
-    }
-    
-    alert(message);
   };
 
   // ✅ Loading and error states
@@ -580,7 +458,7 @@ export default function NameplateDesigner() {
           <div className="bg-red-50 border border-red-200 rounded-lg p-3">
             <h4 className="font-semibold text-red-800 text-sm">❌ Error:</h4>
             <p className="text-red-700 text-xs mt-1 break-words">{error || lastError}</p>
-            <button 
+            <button
               onClick={() => {
                 setError(null);
                 setLastError(null);
@@ -602,15 +480,7 @@ export default function NameplateDesigner() {
 
         {/* Nameplate Management */}
         <div className="border-b pb-4">
-          <div className="flex items-center justify-between mb-2">
-            <p className="font-semibold">Nameplates ({nameplates.length})</p>
-            <button
-              onClick={addNewNameplate}
-              className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700"
-            >
-              + Add New
-            </button>
-          </div>
+          
         </div>
 
         {/* Theme Selection */}
@@ -740,25 +610,25 @@ export default function NameplateDesigner() {
         {/* Template Selection */}
         <div className="mb-4">
           <p className="font-semibold mb-2">Choose Template</p>
-          <p className="text-xs text-gray-600 mb-3">🔥 Current: {activeNameplate.background}</p>
+          
           <div className="grid grid-cols-2 gap-2">
             {templates[activeNameplate.theme].map((bg) => (
-              <button 
-                key={bg} 
+              <button
+                key={bg}
                 onClick={() => {
                   console.log('🎯 Template clicked:', bg);
                   updateActiveNameplate({ background: bg });
                 }}
                 className="relative"
               >
-                <Image
+                <img
                   src={bg}
                   alt="template"
                   width={100}
                   height={70}
                   className={`w-24 h-16 rounded object-cover transition-all ${
-                    activeNameplate.background === bg 
-                      ? "ring-3 ring-indigo-500 ring-offset-2 scale-105" 
+                    activeNameplate.background === bg
+                      ? "ring-3 ring-indigo-500 ring-offset-2 scale-105"
                       : "hover:scale-102"
                   }`}
                 />
@@ -777,8 +647,7 @@ export default function NameplateDesigner() {
           <h3 className="font-semibold text-gray-800 mb-3">🎨 Display Settings</h3>
           <div className="mb-3">
             <label className="text-xs text-gray-600">Owner Name *</label>
-            <input
-              type="text"
+            <textarea
               value={activeNameplate.officer_name}
               onChange={(e) =>
                 updateActiveNameplate({
@@ -797,10 +666,9 @@ export default function NameplateDesigner() {
             />
           </div>
           <div className="mb-3">
-            <label className="text-xs text-gray-600">House Name</label>
-            <input
-              type="text"
-              placeholder="House Name (Display)"
+            <label className="text-xs text-gray-600">House Name (Optional)</label>
+            <textarea
+              placeholder="House Name (Optional - leave empty if not needed)"
               value={activeNameplate.houseName}
               onChange={(e) => updateActiveNameplate({ houseName: e.target.value })}
               onFocus={() => setActiveTextField("houseName")}
@@ -837,14 +705,6 @@ export default function NameplateDesigner() {
           >
             {uploading ? "Uploading..." : "💾 Save to Database"}
           </button>
-          
-          <button
-            onClick={handleSaveAll}
-            disabled={uploading || !supabase || nameplates.length === 0}
-            className="w-full bg-purple-600 text-white rounded p-2 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {uploading ? "Uploading All..." : `📤 Save All to Database (${nameplates.length})`}
-          </button>
         </div>
 
         {/* User Info (for debugging) */}
@@ -863,148 +723,77 @@ export default function NameplateDesigner() {
         {/* Main Preview */}
         <div
           ref={previewRef}
+          key={`preview-${activeNameplate.id}`}
           className="relative w-[600px] h-[400px] rounded-xl shadow-2xl overflow-hidden font-sans mb-6"
         >
-          <Image 
+          {backgroundLoading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-gray-200">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+            </div>
+          )}
+          
+          <img
             key={`${activeNameplate.id}-${activeNameplate.background}`}
-            src={activeNameplate.background} 
-            alt="Background" 
-            fill 
-            className="object-cover"
-            priority={true}
-            onLoad={() => console.log('🖼️ Background image loaded:', activeNameplate.background)}
-            onError={() => console.error('❌ Failed to load background:', activeNameplate.background)}
+            src={activeNameplate.background}
+            alt="Background"
+            className="w-full h-full object-cover"
+            onLoadStart={() => setBackgroundLoading(true)}
+            onLoad={() => {
+              setBackgroundLoading(false);
+              console.log('🖼️ Background image loaded:', activeNameplate.background);
+            }}
+            onError={() => {
+              setBackgroundLoading(false);
+              console.error('❌ Failed to load background:', activeNameplate.background);
+            }}
           />
 
-          <div className="absolute inset-0 px-6 space-y-2">
-            <h1
-              className="absolute text-lg font-bold drop-shadow-lg font-[Great_Vibes] top-10 right-20"
-              style={{ 
-                color: activeNameplate.houseNameColor,
-                fontSize: `${activeNameplate.houseNameSize}px`
-              }}
-            >
-              {activeNameplate.houseName}
-            </h1>
+          <div className={`absolute inset-0 px-6 space-y-2 ${tangerine.variable} `}>
+            {/* ✅ UPDATED: Only show house name if it exists */}
+            {activeNameplate.houseName && activeNameplate.houseName.trim() && (
+              <h1
+                className="absolute text-lg font-bold drop-shadow-lg font-[Great_Vibes] top-10 right-20"
+                style={{
+                  color: activeNameplate.houseNameColor,
+                  fontSize: `${activeNameplate.houseNameSize}px`,
+                  border: "none",
+                  whiteSpace: "pre",
+                  textAlign: "center",
+                  lineHeight: 1,
+                }}
+              >
+                {activeNameplate.houseName}
+              </h1>
+            )}
             <p
-              className="absolute drop-shadow-lg font-[Dancing_Script] top-[50%] right-[50%] whitespace-nowrap"
-              style={{ 
+              className="absolute drop-shadow-lg font-[Dancing_Script] top-[50%] right-[50%] text-center"
+              style={{
                 color: activeNameplate.ownerNameColor,
                 fontSize: `${activeNameplate.ownerNameSize}px`,
-                transform: 'translate(50%, -50%)'
+                transform: 'translate(50%, -50%)',
+                border: "none",
+                whiteSpace: "pre",
+                textAlign: "center",
+                lineHeight: 1,
               }}
             >
               {activeNameplate.officer_name}
             </p>
             
             <p
-              className="absolute drop-shadow-lg font-[Dancing_Script] bottom-10 right-[50%]"
-              style={{ 
+              className="absolute text-center drop-shadow-lg font-[Dancing_Script] bottom-10 right-[50%]"
+              style={{
                 color: activeNameplate.addressColor,
                 fontSize: `${activeNameplate.addressSize}px`,
-                transform: 'translateX(50%)'
+                transform: 'translateX(50%)',
+                border: "none",
+                whiteSpace: "pre",
+                textAlign: "center",
+                lineHeight: 1,
               }}
             >
               {activeNameplate.address}
             </p>
-          </div>
-        </div>
-
-        {/* Nameplate Grid */}
-        <div className="w-full max-w-4xl">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-800">All Nameplates</h3>
-            <span className="text-sm text-gray-600">{nameplates.length} designs</span>
-          </div>
-          
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {nameplates.map((nameplate) => (
-              <div
-                key={nameplate.id}
-                className={`relative group cursor-pointer transition-all duration-200 ${
-                  activeNameplateId === nameplate.id
-                    ? "ring-3 ring-indigo-500 scale-105"
-                    : "hover:scale-102 hover:shadow-lg"
-                }`}
-                onClick={() => setActiveNameplateId(nameplate.id)}
-              >
-                <div className="relative w-full h-32 rounded-lg overflow-hidden bg-white shadow-md">
-                  <Image 
-                    src={nameplate.background} 
-                    alt="Background" 
-                    fill 
-                    className="object-cover" 
-                    onError={() => console.error('❌ Failed to load thumbnail:', nameplate.background)}
-                  />
-                  
-                  <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-2">
-                    <h4 
-                      className="text-xs font-bold drop-shadow truncate w-full"
-                      style={{ color: nameplate.houseNameColor }}
-                    >
-                      {nameplate.houseName}
-                    </h4>
-                    <p 
-                      className="text-xs drop-shadow truncate w-full"
-                      style={{ color: nameplate.ownerNameColor }}
-                    >
-                      {nameplate.officer_name}
-                    </p>
-                  </div>
-
-                  <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex gap-1">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        duplicateNameplate(nameplate.id);
-                      }}
-                      className="bg-white/80 hover:bg-white text-gray-700 rounded p-1 text-xs shadow"
-                      title="Duplicate"
-                    >
-                      📋
-                    </button>
-                    {nameplates.length > 1 && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (confirm(`Delete nameplate for ${nameplate.officer_name}?`)) {
-                            deleteNameplate(nameplate.id);
-                          }
-                        }}
-                        className="bg-white/80 hover:bg-white text-red-600 rounded p-1 text-xs shadow"
-                        title="Delete"
-                      >
-                        🗑️
-                      </button>
-                    )}
-                  </div>
-
-                  {activeNameplateId === nameplate.id && (
-                    <div className="absolute top-1 left-1 bg-indigo-600 text-white text-xs px-2 py-1 rounded">
-                      Active
-                    </div>
-                  )}
-                </div>
-
-                <div className="mt-2 text-center">
-                  <p className="text-sm font-medium text-gray-800 truncate">
-                    {nameplate.officer_name || 'Unnamed'}
-                  </p>
-                  <p className="text-xs text-gray-500 truncate">
-                    {nameplate.theme.toUpperCase()} • Lot {nameplate.lot || 'N/A'}
-                  </p>
-                </div>
-              </div>
-            ))}
-
-            <div
-              onClick={addNewNameplate}
-              className="relative w-full h-32 rounded-lg border-2 border-dashed border-gray-300 hover:border-indigo-400 cursor-pointer transition-all duration-200 hover:bg-gray-50 flex flex-col items-center justify-center text-gray-500 hover:text-indigo-600"
-            >
-              <div className="text-2xl mb-1">+</div>
-              <p className="text-sm font-medium">Add New</p>
-              <p className="text-xs">Nameplate</p>
-            </div>
           </div>
         </div>
 

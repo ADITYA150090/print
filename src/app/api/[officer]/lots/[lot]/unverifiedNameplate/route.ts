@@ -10,7 +10,7 @@ export async function POST(req: Request) {
     const body = await req.json();
 
     // ✅ Basic validation for required fields
-    const requiredFields = ["theme", "background", "houseName", "ownerName", "address", "rmo", "officer", "lot", "officer_name", "email"];
+    const requiredFields = ["theme", "background",  "ownerName",  "rmo", "officer", "lot", "officer_name", "email"];
     const missingFields = requiredFields.filter((field) => !body[field]);
 
     if (missingFields.length > 0) {
