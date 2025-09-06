@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import jwt from "jsonwebtoken";
 
 export function middleware(req: NextRequest) {
   const path = req.nextUrl.pathname;
@@ -11,43 +12,52 @@ export function middleware(req: NextRequest) {
     path.startsWith("/public/") ||
     path.startsWith("/api/")
   ) {
-    return;
+    return NextResponse.next();
   }
 
-  // Get token from cookies
   const token = req.cookies.get("token")?.value || "";
-
-  // Public paths
   const publicPaths = ["/login", "/register"];
 
-  // --- Logic for non-logged-in users ---
+  // --- Not logged in ---
   if (!token) {
-    // Guests can access /, /login, /register
     if (path === "/" || publicPaths.includes(path)) {
-      return;
+      return NextResponse.next();
     }
-    // All other paths require login
-    return NextResponse.redirect(new URL("/login", req.nextUrl));
+    return NextResponse.redirect(new URL("/", req.nextUrl));
   }
 
-  // --- Logic for logged-in users ---
-  if (token) {
-    // Redirect logged-in users away from /, /login, /register
-    if (path === "/" || publicPaths.includes(path)) {
-      return NextResponse.redirect(new URL("/rmo", req.nextUrl)); // dashboard
+  // --- Logged in ---
+  try {
+    const decoded: any = jwt.decode(token);
+    const officerNumber = decoded?.officerNumber; // 👈 use correct field
+
+    if (!officerNumber) {
+      return NextResponse.redirect(new URL("/", req.nextUrl));
     }
-    // Otherwise allow access to private routes
-    return;
+
+    // If at `/`, `/login`, or `/register` → send to officerNumber page
+    if (path === "/" || publicPaths.includes(path)) {
+      return NextResponse.redirect(new URL(`/${officerNumber}`, req.nextUrl));
+    }
+
+    // If at some other officer path → force correct officer
+    const firstSegment = path.split("/")[1];
+    if (firstSegment && firstSegment !== officerNumber) {
+      return NextResponse.redirect(new URL(`/${officerNumber}`, req.nextUrl));
+    }
+
+    return NextResponse.next();
+  } catch (err) {
+    console.error("❌ Invalid token:", err);
+    return NextResponse.redirect(new URL("/", req.nextUrl));
   }
 }
 
-// --- Apply middleware only to relevant paths ---
 export const config = {
   matcher: [
-    "/",               
-    "/admin",          
-    "/rmo/:path*",     
-    "/:officer/:path*", 
+    "/",
+    "/admin",
+    "/:officer/:path*",
     "/login",
     "/register",
   ],
