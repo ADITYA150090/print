@@ -4,9 +4,10 @@ import { useEffect, useRef, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { toBlob } from "html-to-image";
 import { useParams, useRouter } from "next/navigation";
-import {Tangerine} from 'next/font/google';
+import Image from "next/image";
+import { Tangerine } from 'next/font/google';
 
-const tangerine = Tangerine({ subsets: ['latin'], weight: ['400', '700'] , variable: '--font-tangerine'});
+const tangerine = Tangerine({ subsets: ['latin'], weight: ['400', '700'], variable: '--font-tangerine' });
 
 // ✅ Environment variables with fallbacks and validation
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -100,7 +101,7 @@ const createDefaultNameplate = (id: string, lot?: string): Nameplate => ({
   id,
   theme: "ambuja",
   background: templates.ambuja[0],
-  houseName: "", // ✅ Changed: Default to empty string instead of "My Sweet Home"
+  houseName: "",
   ownerName: "Sample Name",
   address: "Plot No. 21, Pune, India",
   houseNameColor: "#FFD700",
@@ -211,7 +212,7 @@ export default function NameplateDesigner() {
     await new Promise(resolve => setTimeout(resolve, 100));
   };
 
-  // ✅ UPDATED: Validation - houseName is now optional
+  // ✅ Validation - houseName is now optional
   const validateNameplateData = (nameplate: Nameplate): string[] => {
     const errors: string[] = [];
     
@@ -221,9 +222,6 @@ export default function NameplateDesigner() {
     if (!nameplate.officer_name?.trim()) errors.push("Officer Name is required");
     if (!nameplate.email?.trim()) errors.push("Email is required");
     if (!nameplate.mobileNumber?.trim()) errors.push("Mobile Number is required");
-
-    // ✅ REMOVED: houseName validation - it's now optional
-    // House name can be empty, so no validation needed
 
     // Email validation
     if (nameplate.email?.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(nameplate.email)) {
@@ -238,7 +236,7 @@ export default function NameplateDesigner() {
     return errors;
   };
 
-  // ✅ UPDATED: MongoDB save with optional houseName
+  // ✅ MongoDB save with optional houseName
   const saveToMongoDB = async (nameplateData: Nameplate, imageUrl: string): Promise<{ success: boolean; error?: string }> => {
     try {
       setLastError(null);
@@ -250,7 +248,7 @@ export default function NameplateDesigner() {
       const mongoDocument = {
         theme: nameplateData.theme,
         background: nameplateData.background,
-        houseName: nameplateData.houseName || "", // ✅ Default to empty string if not provided
+        houseName: nameplateData.houseName || "",
         ownerName: nameplateData.ownerName,
         address: nameplateData.address,
         houseNameColor: nameplateData.houseNameColor,
@@ -312,17 +310,17 @@ export default function NameplateDesigner() {
     }
   };
 
-  // ✅ FIXED: Image generation now accepts specific nameplate data
+  // ✅ OPTIMIZED: Image generation with Next.js Image support
   const generateImage = async (element: HTMLDivElement, nameplateData: Nameplate): Promise<Blob> => {
     console.log('🖼️ Generating image for nameplate:', nameplateData.officer_name, 'with background:', nameplateData.background);
     
-    // Wait for all images to load
+    // Wait for all images to load (both regular img and Next.js Image components)
     const images = element.querySelectorAll('img');
     await Promise.all(
       Array.from(images).map(img => {
         if (img.complete) return Promise.resolve();
         return new Promise((resolve, reject) => {
-          const timeout = setTimeout(() => resolve(null), 5000); // 5s timeout
+          const timeout = setTimeout(() => resolve(null), 10000); // Increased timeout for optimization
           img.onload = () => {
             clearTimeout(timeout);
             resolve(null);
@@ -335,12 +333,17 @@ export default function NameplateDesigner() {
       })
     );
 
+    // Additional wait to ensure Next.js Image optimization is complete
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
     // Generate blob with error handling
     const blob = await toBlob(element, {
       backgroundColor: "white",
       quality: 0.95,
       pixelRatio: 2,
       skipFonts: false,
+      // Disable cache to ensure fresh renders
+      cacheBust: true,
     });
 
     if (!blob) {
@@ -381,7 +384,7 @@ export default function NameplateDesigner() {
     }
   };
 
-  // ✅ FIXED: Single save uses correct nameplate data
+  // ✅ Single save uses correct nameplate data
   const handleSave = async () => {
     if (!previewRef.current) {
       alert("Preview element not found. Please try again.");
@@ -405,8 +408,8 @@ export default function NameplateDesigner() {
     try {
       console.log('🎯 Current background being saved:', activeNameplate.background);
       
-      // Wait for DOM to update
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Wait for DOM and Next.js Image optimization to complete
+      await new Promise(resolve => setTimeout(resolve, 1500));
       
       // Generate image with the correct nameplate data
       const blob = await generateImage(previewRef.current, activeNameplate);
@@ -477,11 +480,6 @@ export default function NameplateDesigner() {
             <p className="text-yellow-700 text-xs mt-1">Upload service unavailable. Please check environment variables.</p>
           </div>
         )}
-
-        {/* Nameplate Management */}
-        <div className="border-b pb-4">
-          
-        </div>
 
         {/* Theme Selection */}
         <div>
@@ -607,7 +605,7 @@ export default function NameplateDesigner() {
           )}
         </div>
 
-        {/* Template Selection */}
+        {/* Template Selection with Next.js Image */}
         <div className="mb-4">
           <p className="font-semibold mb-2">Choose Template</p>
           
@@ -621,16 +619,20 @@ export default function NameplateDesigner() {
                 }}
                 className="relative"
               >
-                <img
+                <Image
                   src={bg}
-                  alt="template"
-                  width={100}
-                  height={70}
+                  alt={`Template ${bg.split('/').pop()}`}
+                  width={96}
+                  height={64}
                   className={`w-24 h-16 rounded object-cover transition-all ${
                     activeNameplate.background === bg
                       ? "ring-3 ring-indigo-500 ring-offset-2 scale-105"
                       : "hover:scale-102"
                   }`}
+                  quality={85}
+                  priority={activeNameplate.background === bg}
+                  placeholder="blur"
+                  blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAEAAQDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyLli2k7Q2s+wY8UeBcdmTEtIElAVSOwKQGE7cOJ7YJD1jBJMbvHcOZ1j8xmAdQVTMnOdG2VEhHE4BzSQplHMmOmGOEVMoyUfPcJFl2IpQFSmSqLjuPCN3y7VUwpRKJQQBKOIZJQUKRzHuU7Yz8k/e8eYoD+oJDgYYKwxdS4rI6A1oJO2Yl4MfhJ3K8PtTJZe4jRW6Z3JBR2QM4kZPHs9+pQRgRGYLqsEpjNO1AMqkrUfhOkJWKoEVY4eVWHUm9rP9NPB/5DqxhKvCJ1J7v8fLZnCKbdF6Ql7Wgq8tZBAcRTCz5l5LWKVgPMWQ+QcKfA3IOpCAF7hhQQUqeR9ZLoCOo/3CrpWFf0N5V8kz5YzYBGSKRANSGU9KQRQF8KcKXCqcUgAGrClSoPPnMaGxvPmSg4aRxlixGHGr8wSdcjdpJRjZjkfqhxfVrJtmV5Qk1k7XjnCrOgpXJYJKJRgDPkUqCBCHCCFFCQLm+XKElNgf8YeFHJgL4E8OJHCnBJQUY8q6jGJgmGTIZOhgXzDwkVZ4RgSwJ8AcJxRoE4aG8dxrAXxH4QgdREiKUJKJ7wEHH/2Q=="
                 />
                 {activeNameplate.background === bg && (
                   <div className="absolute top-1 left-1 bg-indigo-600 text-white text-xs px-1 py-0.5 rounded">
@@ -727,17 +729,21 @@ export default function NameplateDesigner() {
           className="relative w-[600px] h-[400px] rounded-xl shadow-2xl overflow-hidden font-sans mb-6"
         >
           {backgroundLoading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-gray-200">
+            <div className="absolute inset-0 flex items-center justify-center bg-gray-200 z-10">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
             </div>
           )}
           
-          <img
+          {/* Optimized Background Image with Next.js Image */}
+          <Image
             key={`${activeNameplate.id}-${activeNameplate.background}`}
             src={activeNameplate.background}
-            alt="Background"
-            className="w-full h-full object-cover"
-            onLoadStart={() => setBackgroundLoading(true)}
+            alt="Nameplate Background"
+            fill
+            className="object-cover"
+            quality={85} // Reduced from 95 to 85 for faster loading
+            priority
+            sizes="600px"
             onLoad={() => {
               setBackgroundLoading(false);
               console.log('🖼️ Background image loaded:', activeNameplate.background);
@@ -746,10 +752,11 @@ export default function NameplateDesigner() {
               setBackgroundLoading(false);
               console.error('❌ Failed to load background:', activeNameplate.background);
             }}
+            onLoadStart={() => setBackgroundLoading(true)}
           />
 
-          <div className={`absolute inset-0 px-6 space-y-2 ${tangerine.variable} `}>
-            {/* ✅ UPDATED: Only show house name if it exists */}
+          <div className={`absolute inset-0 px-6 space-y-2 ${tangerine.variable}`}>
+            {/* House Name - Only show if it exists */}
             {activeNameplate.houseName && activeNameplate.houseName.trim() && (
               <h1
                 className="absolute text-lg font-bold drop-shadow-lg font-[Great_Vibes] top-10 right-20"
@@ -765,6 +772,8 @@ export default function NameplateDesigner() {
                 {activeNameplate.houseName}
               </h1>
             )}
+            
+            {/* Owner Name */}
             <p
               className="absolute drop-shadow-lg font-[Dancing_Script] top-[50%] right-[50%] text-center"
               style={{
@@ -780,6 +789,7 @@ export default function NameplateDesigner() {
               {activeNameplate.officer_name}
             </p>
             
+            {/* Address */}
             <p
               className="absolute text-center drop-shadow-lg font-[Dancing_Script] bottom-10 right-[50%]"
               style={{
