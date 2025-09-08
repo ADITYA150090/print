@@ -27,9 +27,9 @@ const UnverifiedNameplateSchema: Schema = new Schema(
   {
     theme: { type: String, required: true },
     background: { type: String, required: true },
-    houseName: { type: String, required: true },
+    houseName: { type: String },
     ownerName: { type: String, required: true },
-    address: { type: String, required: true },
+    address: { type: String },
     textColor: { type: String, default: "#000000" },
 
     rmo: { type: String, required: true },

@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { BarChart2, Users, FileText, Bell, User } from "lucide-react";
-import Sidebar from "@/components/Sidebar"; // adjust path if needed
+import { BarChart2, Users, FileText, User } from "lucide-react";
+import Sidebar from "@/components/Sidebar";
+import { useParams, useRouter } from "next/navigation";
 
 export default function DashboardLayout({
   children,
@@ -11,13 +12,17 @@ export default function DashboardLayout({
 }) {
   const [active, setActive] = useState("Dashboard");
 
-  // ✅ Customize menu here (different roles can have different menus)
+  // ✅ Get officerId from URL
+  const {officer} = useParams();
+
+  const router = useRouter();
+
+  // ✅ Build routes dynamically
   const menuItems = [
-    { name: "Dashboard", icon: <BarChart2 size={20} />, route: "/dashboard" },
-    { name: "Officers", icon: <Users size={20} />, route: "/dashboard/officers" },
-    { name: "Billing", icon: <FileText size={20} />, route: "/dashboard/billing" },
-    { name: "Notification", icon: <Bell size={20} />, route: "/dashboard/notification" },
-    { name: "Profile", icon: <User size={20} />, route: "/${officerId}/profile" },
+    { name: "Dashboard", icon: <BarChart2 size={20} />, route: `/${officer}` },
+    { name: "Lots", icon: <Users size={20} />, route: `/${officer}/lots` },
+    { name: "Billing", icon: <FileText size={20} />, route: `/${officer}/billing` },
+    { name: "Profile", icon: <User size={20} />, route: `/${officer}/profile` },
   ];
 
   return (

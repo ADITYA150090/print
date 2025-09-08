@@ -22,10 +22,10 @@ export async function GET(req: NextRequest) {
 
     // Hardcoded stats
     const stats = {
-      unverified: 550,
-      verified: 500,
-      onTransit: 300,
-      totalDelivered: 50000,
+      unverified: 0,
+      verified: 0,
+      onTransit: 0,
+      totalDelivered: 0,
     };
 
     return NextResponse.json({
