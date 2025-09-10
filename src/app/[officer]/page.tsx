@@ -76,7 +76,7 @@ export default function OfficerDashboardPage() {
   if (error) return <p className="p-6 text-red-500">{error}</p>;
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
+    <div className="min-h-screen bg-gray-100 p-6 ">
       <h1 className="text-3xl font-bold text-gray-800 mb-6">
         Officer Dashboard ({officerId.toUpperCase()})
       </h1>

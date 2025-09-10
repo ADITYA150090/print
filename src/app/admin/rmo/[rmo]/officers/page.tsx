@@ -60,7 +60,7 @@ export default function RmoOfficersPage() {
   if (loading) return <p className="p-4">Loading officers...</p>;
 
   return (
-    <div className="p-6">
+    <div className="p-6 bg-white">
       <h1 className="text-xl font-bold text-black mb-4">Officers under {rmo}</h1>
 
       {/* Search Bar */}
@@ -69,7 +69,8 @@ export default function RmoOfficersPage() {
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         placeholder="Search by ID, Name or Number..."
-        className="w-full p-2 border rounded mb-4"
+        className="w-1/2 p-2 px-5 border rounded-xl mb-4 border-black text-black "
+
       />
 
       {/* Officers List */}
@@ -80,20 +81,18 @@ export default function RmoOfficersPage() {
           {filteredOfficers.map((officer) => (
             <li
               key={officer._id}
-              className="p-3 border rounded shadow-sm text-black bg-red-500 cursor-pointer hover:bg-red-600 transition"
+              className="p-3  rounded shadow-sm text-black bg-gray-100 cursor-pointer hover:bg-gray-200 transition"
               onClick={() =>
                 router.push(`/admin/rmo/${rmo}/officers/${officer.officerNumber}/lots`)
               }
             >
+              
               <p>
-                <span className="font-semibold">ID:</span> {officer._id}
-              </p>
-              <p>
-                <span className="font-semibold">Name:</span>{" "}
+                <span className="font-semibold">Name :</span>{" "}
                 {officer.officerName}
               </p>
               <p>
-                <span className="font-semibold">Number:</span>{" "}
+                <span className="font-semibold">Officer ID :</span>{" "}
                 {officer.officerNumber}
               </p>
             </li>

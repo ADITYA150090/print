@@ -14,13 +14,17 @@ interface Nameplate {
 
 export default function LotDetailPage() {
   const params = useParams();
-  const officerParam = params.officer as string;
-  const lot = params.lot as string;
+const officerParam = params.officer as string;
+const lot = decodeURIComponent(params.lot as string);
+
 
   const [records, setRecords] = useState<Nameplate[]>([]);
   const [rmo, setRmo] = useState<string | null>(null);
   const router = useRouter();
 
+
+
+  
   // Fetch RMO from auth/me
   useEffect(() => {
     const fetchRmo = async () => {
@@ -65,8 +69,10 @@ export default function LotDetailPage() {
     router.push(`/${officerParam}/lots/${lot}/createNameplate`);
   };
 
+  
+
   return (
-    <div className="min-h-screen p-6 bg-gray-50 relative text-black">
+    <div  className="min-h-screen p-6 bg-gray-50 relative text-black">
       <h1 className="text-3xl font-bold mb-4">Lot: {lot}</h1>
       <p className="text-lg mb-6">Officer: {officerParam}</p>
 
@@ -84,6 +90,7 @@ export default function LotDetailPage() {
           {records.map((record) => (
             <div key={record.id} className="bg-white p-4 rounded shadow-md">
               <img
+             
                 src={record.imageUrl}
                 alt={record.houseName}
                 className="w-full h-40 object-cover rounded"

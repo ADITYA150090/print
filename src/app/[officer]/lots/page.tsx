@@ -27,6 +27,7 @@ interface ApiResponse<T = any> {
   error?: string;
 }
 
+
 // ✅ Custom hook for API calls with error handling
 const useApiCall = () => {
   const [loading, setLoading] = useState(false);
@@ -174,12 +175,13 @@ export default function LotsPage() {
     try {
       // Generate a unique lot ID
       const existingIds = lots.map((lot) => {
+        const normalizedId = lot.id.replace("_", " ");
         const match = lot.id.match(/(\d+)$/);
         return match ? parseInt(match[1]) : 0;
       });
 
       const nextNumber = existingIds.length > 0 ? Math.max(...existingIds) + 1 : 1;
-      const newLotId = `Lot_${nextNumber}`;
+      const newLotId = `Lot ${nextNumber}`;
       const newLotName = `Lot ${nextNumber}`;
 
       // Optimistically add to UI

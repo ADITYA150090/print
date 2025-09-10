@@ -11,7 +11,7 @@ import {
   ChevronRight,
   Bell,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 
 type UserType = {
   name?: string;
@@ -29,7 +29,7 @@ type MenuItem = {
 interface SidebarProps {
   active: string;
   setActive: (item: string) => void;
-  menuItems: MenuItem[]; // ✅ Now menu is dynamic
+  menuItems: MenuItem[];
 }
 
 export default function Sidebar({ active, setActive, menuItems }: SidebarProps) {
@@ -53,13 +53,17 @@ export default function Sidebar({ active, setActive, menuItems }: SidebarProps) 
     fetchUser();
   }, []);
 
-  const displayName = user?.name || user?.officerName || "User";
+  // ✅ Fix for string | string[]
+  const { rmo } = useParams();
+  const rmoParam = Array.isArray(rmo) ? rmo[0] : rmo;
+
+  const displayName = user?.name || user?.officerName || rmoParam || "User";
 
   return (
     <aside
       className={`h-screen fixed top-0 left-0 flex flex-col
-      backdrop-blur-lg bg-gray-900/60 border-r border-gray-700
-      text-white shadow-2xl transition-all duration-300 ease-in-out
+      backdrop-blur-lg bg-white border-gray-700
+      text-black shadow-2xl transition-all duration-300 ease-in-out
       ${isOpen ? "w-64" : "w-20"}`}
     >
       {/* Profile */}
@@ -92,7 +96,7 @@ export default function Sidebar({ active, setActive, menuItems }: SidebarProps) 
               ${
                 active === item.name
                   ? "bg-indigo-600 text-white shadow-lg"
-                  : "text-gray-300 hover:bg-gray-700/70"
+                  : "text-black hover:bg-gray-100"
               }`}
           >
             {item.icon}

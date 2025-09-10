@@ -159,7 +159,7 @@ export default function NameplateDesigner() {
   // Memoized active nameplate
   const activeNameplate =
     nameplates.find((n) => n.id === activeNameplateId) || nameplates[0];
-  console.log("Active Nameplate:", activeNameplate);
+ 
 
   // User authentication with error handling
   useEffect(() => {
@@ -205,6 +205,8 @@ export default function NameplateDesigner() {
       );
     }
   }, [user]);
+
+ 
 
   // Utility functions
   const updateActiveNameplate = (updates: Partial<Nameplate>) => {

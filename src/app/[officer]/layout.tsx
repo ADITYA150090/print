@@ -12,9 +12,9 @@ export default function DashboardLayout({
 }) {
   const [active, setActive] = useState("Dashboard");
 
-  // ✅ Get officerId from URL
-  const {officer} = useParams();
 
+  const {officer} = useParams();
+ 
   const router = useRouter();
 
   // ✅ Build routes dynamically

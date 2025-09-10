@@ -26,6 +26,8 @@ export default function RmoOfficersPage() {
       try {
         const res = await fetch(`/api/rmo/${rmo}/officers`);
         const data = await res.json();
+        console.log("API response:", data);
+
         if (data.success) {
           setOfficers(data.officers);
           setFilteredOfficers(data.officers);
@@ -61,7 +63,7 @@ export default function RmoOfficersPage() {
 
   return (
     <div className="p-6">
-      <h1 className="text-xl font-bold text-black mb-4">Officers under {rmo}</h1>
+      <h1 className="text-2xl font-bold text-black mb-4">Officers under : {rmo}</h1>
 
       {/* Search Bar */}
       <input
@@ -69,7 +71,7 @@ export default function RmoOfficersPage() {
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         placeholder="Search by ID, Name or Number..."
-        className="w-full p-2 border rounded mb-4"
+        className="w-1/2  px-4 py-2  rounded-2xl bg-white text-black mb-4"
       />
 
       {/* Officers List */}
@@ -80,7 +82,7 @@ export default function RmoOfficersPage() {
           {filteredOfficers.map((officer) => (
             <li
               key={officer._id}
-              className="p-3 border rounded shadow-sm text-black bg-red-500 cursor-pointer hover:bg-red-600 transition"
+              className="p-3  rounded shadow-sm text-black bg-white cursor-pointer hover:bg-gray-100 transition"
               onClick={() =>
                 router.push(`/rmo/${rmo}/officers/${officer.officerNumber}/lots`)
               }
