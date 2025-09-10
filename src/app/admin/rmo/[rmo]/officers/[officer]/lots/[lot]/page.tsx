@@ -22,6 +22,8 @@ export default function LotDetailsPage() {
   const [records, setRecords] = useState<HouseRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [selectedRecords, setSelectedRecords] = useState<Set<string>>(new Set());
+  const [selectAll, setSelectAll] = useState(false);
 
   useEffect(() => {
     const fetchRecords = async () => {
@@ -47,17 +49,49 @@ export default function LotDetailsPage() {
     fetchRecords();
   }, [rmo, officer, lot]);
 
+  // Toggle individual record
+  const handleCheckboxChange = (id: string) => {
+    setSelectedRecords((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
+  };
+
+  // Toggle select all
+  const handleSelectAll = () => {
+    if (selectAll) {
+      setSelectedRecords(new Set());
+      setSelectAll(false);
+    } else {
+      setSelectedRecords(new Set(records.map((r) => r.id)));
+      setSelectAll(true);
+    }
+  };
+
   const handleSendToPrint = async () => {
+    if (selectedRecords.size === 0) {
+      alert("⚠️ Please select at least one record to print.");
+      return;
+    }
+
     try {
       setSending(true);
+      const selectedData = records.filter((r) => selectedRecords.has(r.id));
+
       const res = await fetch("/api/admin/print", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ rmo, officer, lot, records }),
+        body: JSON.stringify({ rmo, officer, lot, records: selectedData }),
       });
+
       const result = await res.json();
       if (res.ok) {
-        alert("✅ Data sent to print successfully!");
+        alert("✅ Selected data sent to print successfully!");
       } else {
         alert(`❌ Print request failed: ${result.message || "Unknown error"}`);
       }
@@ -86,34 +120,41 @@ export default function LotDetailsPage() {
             <table className="min-w-full text-sm text-gray-700">
               <thead className="bg-gray-100 text-left text-gray-600">
                 <tr>
+                  <th className="px-4 py-3">
+                    <input
+                      type="checkbox"
+                      checked={selectAll}
+                      onChange={handleSelectAll}
+                      className="w-4 h-4"
+                    />{" "}
+                    Select All
+                  </th>
                   <th className="px-4 py-3">Sr. No.</th>
                   <th className="px-4 py-3">House Name</th>
                   <th className="px-4 py-3">Owner Name</th>
                   <th className="px-4 py-3">Spouse Name</th>
                   <th className="px-4 py-3">Address</th>
-                  {/* <th className="px-4 py-3">Preview</th> */}
-                  {/* <th className="px-4 py-3">Select</th> */}
                 </tr>
               </thead>
               <tbody>
                 {records.map((record, idx) => (
-                  <tr key={record.id} className="border-t hover:bg-gray-50 transition">
+                  <tr
+                    key={record.id}
+                    className="border-t hover:bg-gray-50 transition"
+                  >
+                    <td className="px-4 py-3 text-center">
+                      <input
+                        type="checkbox"
+                        checked={selectedRecords.has(record.id)}
+                        onChange={() => handleCheckboxChange(record.id)}
+                        className="w-4 h-4"
+                      />
+                    </td>
                     <td className="px-4 py-3">{idx + 1}</td>
                     <td className="px-4 py-3 font-medium">{record.houseName}</td>
                     <td className="px-4 py-3">{record.ownerName}</td>
                     <td className="px-4 py-3">{record.spouseName}</td>
                     <td className="px-4 py-3">{record.address}</td>
-                    {/* <td className="px-4 py-3">
-                      <button
-                        onClick={() => window.open(record.imageUrl, "_blank")}
-                        className="px-3 py-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-xs"
-                      >
-                        Preview
-                      </button>
-                    </td> */}
-                    {/* <td className="px-4 py-3 text-center">
-                      <input type="checkbox" className="w-4 h-4" />
-                    </td> */}
                   </tr>
                 ))}
               </tbody>
@@ -128,7 +169,7 @@ export default function LotDetailsPage() {
           disabled={sending}
           className="fixed bottom-6 right-6 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl shadow-lg font-semibold transition"
         >
-          {sending ? "Sending..." : "Send to Print"}
+          {sending ? "Sending..." : "Send Selected to Print"}
         </button>
       )}
     </div>
