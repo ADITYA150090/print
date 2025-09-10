@@ -21,7 +21,6 @@ export default function DashboardLayout({
   const menuItems = [
     { name: "Dashboard", icon: <BarChart2 size={20} />, route: `/${officer}` },
     { name: "Lots", icon: <Users size={20} />, route: `/${officer}/lots` },
-    { name: "Billing", icon: <FileText size={20} />, route: `/${officer}/billing` },
     { name: "Profile", icon: <User size={20} />, route: `/${officer}/profile` },
   ];
 

@@ -22,7 +22,11 @@ export default function OfficerLotsPage() {
         const data = await res.json();
 
         if (data.success && Array.isArray(data.lots)) {
-          setLots(data.lots);
+          // ✅ Deduplicate by `id`
+          const uniqueLots: Lot[] = Array.from(
+            new Map((data.lots as Lot[]).map((lot) => [lot.id, lot])).values()
+          );
+          setLots(uniqueLots);
         } else {
           setLots([]);
         }
@@ -58,7 +62,7 @@ export default function OfficerLotsPage() {
                 className="w-full text-left p-6 bg-white rounded-2xl shadow hover:shadow-lg border border-gray-100 transition transform hover:-translate-y-1"
               >
                 <p className="text-lg font-semibold text-gray-700">{lot.id}</p>
-                <p className="text-sm text-gray-500 mt-1">ID: {lot.name}</p>
+                
               </button>
             ))}
           </div>

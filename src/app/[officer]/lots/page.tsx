@@ -164,45 +164,57 @@ export default function LotsPage() {
   }, [officer, officerParam, isValidOfficer, fetchUserData, fetchLots]);
 
   // Create new lot
-  const handleCreateLot = async () => {
-    if (!user?.rmo || !officerParam) {
-      alert("Missing required user data. Please try refreshing the page.");
-      return;
-    }
+const handleCreateLot = async () => {
+  if (!user?.rmo || !officerParam) {
+    alert("Missing required user data. Please try refreshing the page.");
+    return;
+  }
 
-    setCreateLotLoading(true);
+  setCreateLotLoading(true);
 
-    try {
-      // Generate a unique lot ID
-      const existingIds = lots.map((lot) => {
-        const normalizedId = lot.id.replace("_", " ");
-        const match = lot.id.match(/(\d+)$/);
-        return match ? parseInt(match[1]) : 0;
-      });
+  try {
+    // Extract only sequential "lot_X" numbers correctly
+    const existingNumbers = lots
+      .map((lot) => {
+        const match = lot.id.match(/^lot_(\d+)$/i);
+        return match ? parseInt(match[1], 10) : null;
+      })
+      .filter((num): num is number => num !== null);
 
-      const nextNumber = existingIds.length > 0 ? Math.max(...existingIds) + 1 : 1;
-      const newLotId = `Lot ${nextNumber}`;
-      const newLotName = `Lot ${nextNumber}`;
+    // Next number is max + 1
+    const nextNumber =
+      existingNumbers.length > 0 ? Math.max(...existingNumbers) + 1 : 1;
 
-      // Optimistically add to UI
-      const newLot: Lot = {
-        id: newLotId,
-        name: newLotName,
-        createdAt: new Date().toISOString(),
-      };
+    // Always enforce "lot_X" format
+    const newLotId = `lot_${nextNumber}`;
+    const newLotName = `Lot ${nextNumber}`;
 
-      setLots((prev) =>
-        [...prev, newLot].sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true }))
-      );
+    const newLot: Lot = {
+      id: newLotId,
+      name: newLotName,
+      createdAt: new Date().toISOString(),
+    };
 
-      console.log("Created new lot:", newLot);
-    } catch (error) {
-      console.error("Error creating lot:", error);
-      alert("Failed to create lot. Please try again.");
-    } finally {
-      setCreateLotLoading(false);
-    }
-  };
+    // Optimistically update UI
+    setLots((prev) =>
+      [...prev, newLot].sort((a, b) => {
+        const aNum = parseInt(a.id.match(/(\d+)$/)?.[1] || "0", 10);
+        const bNum = parseInt(b.id.match(/(\d+)$/)?.[1] || "0", 10);
+        return aNum - bNum;
+      })
+    );
+
+    console.log("Created new lot:", newLot);
+  } catch (error) {
+    console.error("Error creating lot:", error);
+    alert("Failed to create lot. Please try again.");
+  } finally {
+    setCreateLotLoading(false);
+  }
+};
+
+
+
 
   // Navigate to lot page
   const handleLotClick = (lotId: string) => {

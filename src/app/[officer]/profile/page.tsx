@@ -40,14 +40,14 @@ export default function Dashboard() {
 
   if (!user) {
     return (
-      <div className="h-full flex items-center justify-center text-gray-400">
+      <div className="h-full flex items-center justify-center text-gray-900">
         Loading user info...
       </div>
     );
   }
 
   return (
-    <div className="h-full flex items-center justify-center p-6">
+    <div className="h-full flex items-center justify-center p-6 text-black">
       <div className="w-full max-w-2xl p-8 rounded-2xl border border-white/20 
         bg-white/10 backdrop-blur-xl shadow-2xl">
         
@@ -59,33 +59,33 @@ export default function Dashboard() {
             className="w-20 h-20 rounded-full border-4 border-indigo-400 shadow-md"
           />
           <div>
-            <h1 className="text-2xl font-bold text-white">{user.officerName}</h1>
-            <p className="text-indigo-200 font-medium">
+            <h1 className="text-2xl font-bold ">{user.officerName}</h1>
+            <p className="text-indigo-500 font-medium">
               Officer ({user.officerNumber})
             </p>
           </div>
         </div>
 
         {/* Info */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-white/90">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-black">
           <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md p-3 rounded-lg">
-            <Mail size={18} className="text-indigo-300" />
+            <Mail size={18} className="text-indigo-500" />
             <span>{user.email}</span>
           </div>
           <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md p-3 rounded-lg">
-            <Phone size={18} className="text-green-300" />
+            <Phone size={18} className="text-green-500" />
             <span>{user.mobileNumber}</span>
           </div>
           <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md p-3 rounded-lg">
-            <Hash size={18} className="text-yellow-300" />
+            <Hash size={18} className="text-yellow-500" />
             <span>RMO: {user.rmo}</span>
           </div>
           <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md p-3 rounded-lg">
-            <MapPin size={18} className="text-red-300" />
+            <MapPin size={18} className="text-red-500" />
             <span>Login Count: {user.loginCount}</span>
           </div>
           <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md p-3 rounded-lg sm:col-span-2">
-            <Building size={18} className="text-purple-300" />
+            <Building size={18} className="text-purple-500" />
             <span>Status: {user.isActive ? "Active" : "Inactive"}</span>
           </div>
         </div>
