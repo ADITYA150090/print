@@ -11,7 +11,7 @@ export default function RegisterPage() {
     email: "",
     password: "",
     mobileNumber: "",
-    rmo: "RMO1",
+    rmo: "",
   });
 
   const handleChange = (
@@ -49,14 +49,14 @@ export default function RegisterPage() {
     <div className="min-h-screen flex items-center justify-center text-black bg-gray-50">
       <div className="bg-white shadow-lg rounded-2xl p-8 w-full max-w-md space-y-6">
         <h2 className="text-2xl font-bold text-center text-gray-800">
-          Officer Registration
+          Technical exicutive Registration
         </h2>
 
         <div className="space-y-4">
           <input
             type="text"
             name="officerName"
-            placeholder="Officer Name"
+            placeholder="Technical Executive Name"
             value={form.officerName}
             onChange={handleChange}
             className="border border-gray-300 p-3 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -88,7 +88,7 @@ export default function RegisterPage() {
           <input
             type="text"
             name="rmo"
-            placeholder="Enter RMO code (e.g. RMO1)"
+            placeholder="Enter TSE code (e.g. 43233)"
             value={form.rmo}
             onChange={handleChange}
             className="border border-gray-300 p-3 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"

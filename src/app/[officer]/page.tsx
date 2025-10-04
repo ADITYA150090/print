@@ -72,13 +72,13 @@ export default function OfficerDashboardPage() {
     }
   };
 
-  if (loading) return <p className="p-6 text-gray-500">Loading officer stats...</p>;
+  if (loading) return <p className="p-6 text-gray-500">Loading  stats...</p>;
   if (error) return <p className="p-6 text-red-500">{error}</p>;
 
   return (
     <div className="min-h-screen bg-gray-100 p-6 ">
       <h1 className="text-3xl font-bold text-gray-800 mb-6">
-        Officer Dashboard ({officerId.toUpperCase()})
+        Technical Exicutive Dashboard ({officerId.toUpperCase()})
       </h1>
 
       {/* Stats Cards */}

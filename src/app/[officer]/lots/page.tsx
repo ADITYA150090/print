@@ -143,7 +143,7 @@ export default function LotsPage() {
   useEffect(() => {
     const initializeData = async () => {
       if (!isValidOfficer) {
-        console.error("Invalid officer parameter:", officer);
+        console.error("Invalid Technical Exicutive parameter:", officer);
         setInitialLoading(false);
         return;
       }
@@ -256,8 +256,8 @@ const handleCreateLot = async () => {
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
         <div className="text-center bg-white p-8 rounded-lg shadow-md">
           <div className="text-red-500 text-6xl mb-4">⚠️</div>
-          <h1 className="text-2xl font-bold text-gray-800 mb-2">Invalid Officer</h1>
-          <p className="text-gray-600 mb-4">The officer parameter "{officer}" is not valid.</p>
+          <h1 className="text-2xl font-bold text-gray-800 mb-2">Invalid Technical Exicutive</h1>
+          <p className="text-gray-600 mb-4">The Technical Exicutive parameter "{officer}" is not valid.</p>
           <button
             onClick={() => router.back()}
             className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
@@ -274,7 +274,7 @@ const handleCreateLot = async () => {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-800">Lots for Officer: {officerParam}</h1>
+          <h1 className="text-3xl font-bold text-gray-800">Lots for Technical Exicutive: {officerParam}</h1>
           {user?.rmo && <p className="text-sm text-gray-600 mt-1">RMO: {user.rmo}</p>}
         </div>
 

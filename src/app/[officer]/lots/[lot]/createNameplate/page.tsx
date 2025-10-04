@@ -90,16 +90,16 @@ const templates: Record<string, string[]> = {
 // FIXED: Fallback templates - removed duplicate failing image
 const fallbackTemplates: Record<string, string[]> = {
   ambuja: [
-    "https://cmfngihxssbqxqmyqftg.supabase.co/storage/v1/object/public/Nameplate/d1.webp", // Different from d1.webp
-    "https://cmfngihxssbqxqmyqftg.supabase.co/storage/v1/object/public/Nameplate/d2.webp",
-    "https://cmfngihxssbqxqmyqftg.supabase.co/storage/v1/object/public/Nameplate/d3.webp",
-    "https://cmfngihxssbqxqmyqftg.supabase.co/storage/v1/object/public/Nameplate/d4.webp",
+    "https://ylendiyanowzdklxkyny.supabase.co/storage/v1/object/public/nameplate/Ambuja%20Golden%201.jpg", // Different from d1.webp
+    "https://ylendiyanowzdklxkyny.supabase.co/storage/v1/object/public/nameplate/Ambuja%20Marble%202.jpg",
+    "https://ylendiyanowzdklxkyny.supabase.co/storage/v1/object/public/nameplate/Ambuja%20Black%20Stone%203.jpg",
+    "https://ylendiyanowzdklxkyny.supabase.co/storage/v1/object/public/nameplate/Ambuja%20Tiles%20Marble%204.jpg",
   ],
   acc: [
-    "https://cmfngihxssbqxqmyqftg.supabase.co/storage/v1/object/public/Nameplate/d1%20(1).webp",
-    "https://cmfngihxssbqxqmyqftg.supabase.co/storage/v1/object/public/Nameplate/d2%20(1).webp",
-    "https://cmfngihxssbqxqmyqftg.supabase.co/storage/v1/object/public/Nameplate/d3%20(1).webp",
-    "https://cmfngihxssbqxqmyqftg.supabase.co/storage/v1/object/public/Nameplate/d4%20(1).webp",
+    "https://ylendiyanowzdklxkyny.supabase.co/storage/v1/object/public/nameplate/ACC%20Golden%201.jpg", // Different from d1.webp
+    "https://ylendiyanowzdklxkyny.supabase.co/storage/v1/object/public/nameplate/ACC%20Marble%202.jpg",
+    "https://ylendiyanowzdklxkyny.supabase.co/storage/v1/object/public/nameplate/ACC%20Black%20Stone%203.jpg",
+    "https://ylendiyanowzdklxkyny.supabase.co/storage/v1/object/public/nameplate/ACC%20Tiles%20Marble%204.jpg",
   ],
 };
 
@@ -488,7 +488,7 @@ export default function NameplateDesigner() {
 
       if (mongoResult.success) {
         alert(
-          `Success!\n\nImage uploaded to Supabase\nData saved to MongoDB\nTemplate: ${activeNameplate.background}\nURL: ${publicUrl}`
+          `Success!\n\nImage uploaded `
         );
       } else {
         alert(

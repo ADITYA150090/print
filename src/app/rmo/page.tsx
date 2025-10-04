@@ -34,7 +34,7 @@ export default function RmoLandingPage() {
         {loading ? (
           <p className="text-gray-500">Loading...</p>
         ) : rmos.length === 0 ? (
-          <p className="text-gray-500">No RMOs found</p>
+          <p className="text-gray-500">No TSE found</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {rmos.map((rmo) => (
