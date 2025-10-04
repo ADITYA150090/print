@@ -11,7 +11,7 @@ import {
   ChevronRight,
   Bell,
 } from "lucide-react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter, useParams, usePathname } from "next/navigation";
 
 type UserType = {
   name?: string;
@@ -36,6 +36,7 @@ export default function Sidebar({ active, setActive, menuItems }: SidebarProps) 
   const [isOpen, setIsOpen] = useState(true);
   const [user, setUser] = useState<UserType | null>(null);
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     async function fetchUser() {
@@ -67,7 +68,7 @@ export default function Sidebar({ active, setActive, menuItems }: SidebarProps) 
       ${isOpen ? "w-64" : "w-20"}`}
     >
       {/* Profile */}
-      <div className="flex items-center gap-3 p-4 border-b border-gray-700">
+      <div className="flex items-center gap-3 p-4 border-b border-gray-200">
         <img
           src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
             displayName
@@ -78,7 +79,7 @@ export default function Sidebar({ active, setActive, menuItems }: SidebarProps) 
         {isOpen && (
           <div>
             <h2 className="text-lg font-semibold truncate">{displayName}</h2>
-            <p className="text-sm text-indigo-300">{user?.role || ""}</p>
+            <p className="text-sm text-indigo-400">{user?.role || ""}</p>
           </div>
         )}
       </div>
@@ -90,7 +91,13 @@ export default function Sidebar({ active, setActive, menuItems }: SidebarProps) 
             key={item.name}
             onClick={() => {
               setActive(item.name);
-              router.push(item.route);
+
+              // ✅ If already on this route → refresh, else navigate
+              if (pathname === item.route) {
+                router.refresh();
+              } else {
+                router.push(item.route);
+              }
             }}
             className={`flex items-center gap-3 px-4 py-2 rounded-md transition
               ${
@@ -120,7 +127,7 @@ export default function Sidebar({ active, setActive, menuItems }: SidebarProps) 
         </button>
       </div>
 
-      {/* Toggle */}
+      {/* Toggle Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="absolute top-4 -right-3 bg-indigo-600 text-white p-2 rounded-full shadow-md hover:bg-indigo-500 transition"

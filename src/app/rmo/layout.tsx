@@ -2,7 +2,7 @@
 
 import { useRouter, usePathname } from "next/navigation";
 import { useState } from "react";
-import { BarChart2 } from "lucide-react";
+import { BarChart2, Users, FileText, Bell, User, InfoIcon } from "lucide-react";
 import Sidebar from "@/components/Sidebar";
 
 export default function DashboardLayout({
@@ -19,16 +19,8 @@ export default function DashboardLayout({
     {
       name: "Dashboard",
       icon: <BarChart2 size={20} />,
-      onClick: () => {
-        // ✅ If already on this route, just refresh / stay
-        if (pathname === "/") {
-          router.refresh(); // refresh the data without navigation
-        } else {
-          router.push("/"); // navigate if you're not already on it
-        }
-        setActive("Dashboard");
-      },
-    },
+      route: "/dashboard",
+    }
   ];
 
   return (
