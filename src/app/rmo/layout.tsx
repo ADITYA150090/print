@@ -1,24 +1,34 @@
 "use client";
 
+import { useRouter, usePathname } from "next/navigation";
 import { useState } from "react";
-import { BarChart2, Users, FileText, Bell, User, InfoIcon } from "lucide-react";
-import Sidebar from "@/components/Sidebar"; // adjust path if needed
+import { BarChart2 } from "lucide-react";
+import Sidebar from "@/components/Sidebar";
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const router = useRouter();
+  const pathname = usePathname();
   const [active, setActive] = useState("Dashboard");
 
-  // ✅ Customize menu here (different roles can have different menus)
+  // ✅ Sidebar menu items
   const menuItems = [
-    { name: "Dashboard", icon: <BarChart2 size={20} />, route: "/dashboard" },
-    // { name: "All RMO", icon: <Users size={20} />, route: "/dashboard/officers" },
-    // { name: "nitin", icon: <FileText size={20} />, route: "/dashboard/billing" },
-    { name: "Notification", icon: <Bell size={20} />, route: "/dashboard/notification" },
-    { name: "Profile", icon: <User size={20} />, route: "/dashboard/profile" },
-    { name: "How to use", icon: <InfoIcon size={20} />, route: "/dashboard/profile" },
+    {
+      name: "Dashboard",
+      icon: <BarChart2 size={20} />,
+      onClick: () => {
+        // ✅ If already on this route, just refresh / stay
+        if (pathname === "/") {
+          router.refresh(); // refresh the data without navigation
+        } else {
+          router.push("/"); // navigate if you're not already on it
+        }
+        setActive("Dashboard");
+      },
+    },
   ];
 
   return (
