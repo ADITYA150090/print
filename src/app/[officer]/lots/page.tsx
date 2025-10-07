@@ -275,7 +275,7 @@ const handleCreateLot = async () => {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-bold text-gray-800">Lots for Technical Exicutive: {officerParam}</h1>
-          {user?.rmo && <p className="text-sm text-gray-600 mt-1">RMO: {user.rmo}</p>}
+          {user?.rmo && <p className="text-sm text-gray-600 mt-1">TSE: {user.rmo}</p>}
         </div>
 
         <button
