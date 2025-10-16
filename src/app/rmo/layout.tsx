@@ -1,9 +1,11 @@
 "use client";
 
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, usePathname, useParams } from "next/navigation";
 import { useState } from "react";
 import { BarChart2, Users, FileText, Bell, User, InfoIcon } from "lucide-react";
 import Sidebar from "@/components/Sidebar";
+import { log } from "console";
+import { parseEnv } from "util";
 
 export default function DashboardLayout({
   children,
@@ -11,15 +13,19 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const pathname = usePathname();
-  const [active, setActive] = useState("Dashboard");
+  const params=useParams();
+ 
 
+  
+
+  const [active, setActive] = useState("Dashboard");
+  
   // ✅ Sidebar menu items
   const menuItems = [
     {
       name: "Dashboard",
       icon: <BarChart2 size={20} />,
-      route: "/dashboard",
+      route: `/rmo/${params.rmo}/officers`,
     }
   ];
 
