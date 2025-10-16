@@ -897,7 +897,7 @@ export default function NameplateDesigner() {
             <p
               className="absolute drop-shadow-lg font-[Arena] top-[50%] right-[50%] text-center"
               style={{
-                fontFamily: 'Arena',
+                fontFamily: arena.style.fontFamily, 
                 color: activeNameplate.ownerNameColor,
                 fontSize: `${activeNameplate.ownerNameSize}px`,
                 transform: 'translate(50%, -50%)',
