@@ -80,32 +80,32 @@ const SUPABASE_FALLBACK_BASE = "https://ylendiyanowzdklxkyny.supabase.co/storage
 
 const templates: Record<string, string[]> = {
   ambuja: [
-    "https://cmfngihxssbqxqmyqftg.supabase.co/storage/v1/object/public/Nameplate/d1.webp", // Different from d1.webp
-    "https://cmfngihxssbqxqmyqftg.supabase.co/storage/v1/object/public/Nameplate/d2.webp",
-    "https://cmfngihxssbqxqmyqftg.supabase.co/storage/v1/object/public/Nameplate/d3.webp",
-    "https://cmfngihxssbqxqmyqftg.supabase.co/storage/v1/object/public/Nameplate/d4.webp",
+    "/ambuja/acc1.jpg",
+    "/ambuja/acc2.jpg",
+    "/ambuja/acc3.jpg",
+    "/ambuja/acc4.jpg",
   ],
   acc: [
-    "https://cmfngihxssbqxqmyqftg.supabase.co/storage/v1/object/public/Nameplate/d1%20(1).webp",
-    "https://cmfngihxssbqxqmyqftg.supabase.co/storage/v1/object/public/Nameplate/d2%20(1).webp",
-    "https://cmfngihxssbqxqmyqftg.supabase.co/storage/v1/object/public/Nameplate/d3%20(1).webp",
-    "https://cmfngihxssbqxqmyqftg.supabase.co/storage/v1/object/public/Nameplate/d4%20(1).webp",
+    "/acc/acc11.jpg",
+    "/acc/acc12.jpg",
+    "/acc/acc13.jpg",
+    "/acc/acc14.jpg",
   ],
 };
 
 // FIXED: Fallback templates - removed duplicate failing image
 const fallbackTemplates: Record<string, string[]> = {
   ambuja: [
-    "https://cmfngihxssbqxqmyqftg.supabase.co/storage/v1/object/public/Nameplate/d1.webp", // Different from d1.webp
-    "https://cmfngihxssbqxqmyqftg.supabase.co/storage/v1/object/public/Nameplate/d2.webp",
-    "https://cmfngihxssbqxqmyqftg.supabase.co/storage/v1/object/public/Nameplate/d3.webp",
-    "https://cmfngihxssbqxqmyqftg.supabase.co/storage/v1/object/public/Nameplate/d4.webp",
+    `${SUPABASE_FALLBACK_BASE}/acc1.webp`,
+    `${SUPABASE_FALLBACK_BASE}/acc2.webp`,
+    `${SUPABASE_FALLBACK_BASE}/acc3.webp`,
+    `${SUPABASE_FALLBACK_BASE}/acc4.webp`,
   ],
   acc: [
-    "https://cmfngihxssbqxqmyqftg.supabase.co/storage/v1/object/public/Nameplate/d1%20(1).webp",
-    "https://cmfngihxssbqxqmyqftg.supabase.co/storage/v1/object/public/Nameplate/d2%20(1).webp",
-    "https://cmfngihxssbqxqmyqftg.supabase.co/storage/v1/object/public/Nameplate/d3%20(1).webp",
-    "https://cmfngihxssbqxqmyqftg.supabase.co/storage/v1/object/public/Nameplate/d4%20(1).webp",
+    `${SUPABASE_FALLBACK_BASE}/amb1.webp`,
+    `${SUPABASE_FALLBACK_BASE}/amb2.webp`,
+    `${SUPABASE_FALLBACK_BASE}/amb3.webp`,
+    `${SUPABASE_FALLBACK_BASE}/amb4.webp`,
   ],
 };
 
