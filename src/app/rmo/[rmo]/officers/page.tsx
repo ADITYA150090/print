@@ -59,11 +59,11 @@ export default function RmoOfficersPage() {
     }
   }, [search, officers]);
 
-  if (loading) return <p className="p-4">Loading officers...</p>;
+  if (loading) return <p className="p-4">Loading Technical executives...</p>;
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold text-black mb-4">Officers under : {rmo}</h1>
+      <h1 className="text-2xl font-bold text-black mb-4">Technical Executive under : {rmo}</h1>
 
       {/* Search Bar */}
       <input
@@ -76,7 +76,7 @@ export default function RmoOfficersPage() {
 
       {/* Officers List */}
       {filteredOfficers.length === 0 ? (
-        <p>No officers found.</p>
+        <p>No technical executive found.</p>
       ) : (
         <ul className="space-y-3">
           {filteredOfficers.map((officer) => (

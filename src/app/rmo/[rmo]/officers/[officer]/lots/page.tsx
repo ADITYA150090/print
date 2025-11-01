@@ -46,14 +46,14 @@ export default function OfficerLotsPage() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 p-8">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-extrabold text-gray-800 mb-6">
-          Lots under Officer <span className="text-green-600">{officer}</span> - RMO:{" "}
+          Lots under Technical Executive <span className="text-green-600">{officer}</span> - TSE:{" "}
           <span className="text-purple-600">{rmo}</span>
         </h1>
 
         {loading ? (
           <p className="text-gray-500 animate-pulse">Loading lots...</p>
         ) : lots.length === 0 ? (
-          <p className="text-gray-500">No lots found for this officer in this RMO.</p>
+          <p className="text-gray-500">No lots found for this Technical Executive in this TSE.</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {lots.map((lot) => (

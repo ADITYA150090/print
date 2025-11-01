@@ -36,16 +36,26 @@ export default function OfficerDashboardPage() {
       setError(null);
 
       try {
-        const res = await fetch(`/api/${officerId}`);
+        console.log("🔄 Fetching stats for:", officerId);
+        
+        const res = await fetch(`/api/${officerId}`, {
+          credentials: "include", // Important: include cookies
+        });
+        
+        console.log("📡 Response status:", res.status);
+        
         const data = await res.json();
+        console.log("📦 Response data:", data);
 
         if (data.success) {
           setStats(data.data);
+          console.log("✅ Stats loaded successfully");
         } else {
           setError(data.error || "Failed to fetch stats");
+          console.error("❌ Failed to fetch stats:", data.error);
         }
       } catch (err) {
-        console.error("Error fetching stats:", err);
+        console.error("❌ Error fetching stats:", err);
         setError("Error fetching stats");
       } finally {
         setLoading(false);
@@ -72,18 +82,49 @@ export default function OfficerDashboardPage() {
     }
   };
 
-  if (loading) return <p className="p-6 text-gray-500">Loading officer stats...</p>;
-  if (error) return <p className="p-6 text-red-500">{error}</p>;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-100 p-6 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+          <p className="text-gray-500">Loading stats...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-100 p-6 flex items-center justify-center">
+        <div className="bg-white rounded-lg shadow-md p-8 max-w-md w-full">
+          <div className="text-center">
+            <div className="text-red-500 text-5xl mb-4">⚠️</div>
+            <h2 className="text-xl font-semibold text-gray-800 mb-2">Error</h2>
+            <p className="text-red-500 mb-4">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6 ">
+    <div className="min-h-screen bg-gray-100 p-6">
       <h1 className="text-3xl font-bold text-gray-800 mb-6">
-        Officer Dashboard ({officerId.toUpperCase()})
+        Technical Executive Dashboard ({officerId.toUpperCase()})
       </h1>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 mb-8">
-        <div onClick={() => handleCardClick("unverified")} className="bg-white rounded-2xl shadow-md p-6 flex flex-col cursor-pointer hover:shadow-xl transition">
+        <div 
+          onClick={() => handleCardClick("unverified")} 
+          className="bg-white rounded-2xl shadow-md p-6 flex flex-col cursor-pointer hover:shadow-xl transition"
+        >
           <div className="flex items-center gap-3 mb-2">
             <FileText className="w-6 h-6 text-red-500" />
             <p className="text-gray-500 font-semibold">Unverified</p>
@@ -92,7 +133,10 @@ export default function OfficerDashboardPage() {
           <p className="text-gray-400 mt-1 text-sm">Data</p>
         </div>
 
-        <div onClick={() => handleCardClick("verified")} className="bg-white rounded-2xl shadow-md p-6 flex flex-col cursor-pointer hover:shadow-xl transition">
+        <div 
+          onClick={() => handleCardClick("verified")} 
+          className="bg-white rounded-2xl shadow-md p-6 flex flex-col cursor-pointer hover:shadow-xl transition"
+        >
           <div className="flex items-center gap-3 mb-2">
             <CheckCircle className="w-6 h-6 text-green-500" />
             <p className="text-gray-500 font-semibold">Verified</p>
@@ -101,7 +145,10 @@ export default function OfficerDashboardPage() {
           <p className="text-gray-400 mt-1 text-sm">Data</p>
         </div>
 
-        <div onClick={() => handleCardClick("onTransit")} className="bg-white rounded-2xl shadow-md p-6 flex flex-col cursor-pointer hover:shadow-xl transition">
+        <div 
+          onClick={() => handleCardClick("onTransit")} 
+          className="bg-white rounded-2xl shadow-md p-6 flex flex-col cursor-pointer hover:shadow-xl transition"
+        >
           <div className="flex items-center gap-3 mb-2">
             <Truck className="w-6 h-6 text-yellow-500" />
             <p className="text-gray-500 font-semibold">On Transit</p>
@@ -109,7 +156,10 @@ export default function OfficerDashboardPage() {
           <h2 className="text-3xl font-bold text-gray-800">{stats.onTransit}</h2>
         </div>
 
-        <div onClick={() => handleCardClick("totalDelivered")} className="bg-white rounded-2xl shadow-md p-6 flex flex-col cursor-pointer hover:shadow-xl transition">
+        <div 
+          onClick={() => handleCardClick("totalDelivered")} 
+          className="bg-white rounded-2xl shadow-md p-6 flex flex-col cursor-pointer hover:shadow-xl transition"
+        >
           <div className="flex items-center gap-3 mb-2">
             <Package className="w-6 h-6 text-blue-500" />
             <p className="text-gray-500 font-semibold">Total Delivered</p>
@@ -121,7 +171,10 @@ export default function OfficerDashboardPage() {
 
       {/* Action Buttons */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        <button onClick={() => handleActionClick("showlots")} className="bg-indigo-600 text-white rounded-2xl p-6 flex items-center justify-between hover:bg-indigo-700 transition">
+        <button 
+          onClick={() => handleActionClick("showlots")} 
+          className="bg-indigo-600 text-white rounded-2xl p-6 flex items-center justify-between hover:bg-indigo-700 transition"
+        >
           <div>
             <p className="font-semibold text-lg">Show Lots</p>
             <p className="text-gray-200 mt-1 text-sm">Create New Lots</p>
@@ -129,7 +182,10 @@ export default function OfficerDashboardPage() {
           <Plus className="w-8 h-8" />
         </button>
 
-        <button onClick={() => handleActionClick("trackOrder")} className="bg-green-600 text-white rounded-2xl p-6 flex items-center justify-between hover:bg-green-700 transition">
+        <button 
+          onClick={() => handleActionClick("trackOrder")} 
+          className="bg-green-600 text-white rounded-2xl p-6 flex items-center justify-between hover:bg-green-700 transition"
+        >
           <div>
             <p className="font-semibold text-lg">Track Your Order</p>
             <p className="text-gray-200 mt-1 text-sm">See your delivery status</p>

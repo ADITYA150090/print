@@ -61,7 +61,7 @@ export default function Dashboard() {
           <div>
             <h1 className="text-2xl font-bold ">{user.officerName}</h1>
             <p className="text-indigo-500 font-medium">
-              Officer ({user.officerNumber})
+              Technical Exicutive ({user.officerNumber})
             </p>
           </div>
         </div>
@@ -78,7 +78,7 @@ export default function Dashboard() {
           </div>
           <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md p-3 rounded-lg">
             <Hash size={18} className="text-yellow-500" />
-            <span>RMO: {user.rmo}</span>
+            <span>TSE: {user.rmo}</span>
           </div>
           <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md p-3 rounded-lg">
             <MapPin size={18} className="text-red-500" />

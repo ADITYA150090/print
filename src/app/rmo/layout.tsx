@@ -1,24 +1,32 @@
 "use client";
 
+import { useRouter, usePathname, useParams } from "next/navigation";
 import { useState } from "react";
 import { BarChart2, Users, FileText, Bell, User, InfoIcon } from "lucide-react";
-import Sidebar from "@/components/Sidebar"; // adjust path if needed
+import Sidebar from "@/components/Sidebar";
+import { log } from "console";
+import { parseEnv } from "util";
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [active, setActive] = useState("Dashboard");
+  const router = useRouter();
+  const params=useParams();
+ 
 
-  // ✅ Customize menu here (different roles can have different menus)
+  
+
+  const [active, setActive] = useState("Dashboard");
+  
+  // ✅ Sidebar menu items
   const menuItems = [
-    { name: "Dashboard", icon: <BarChart2 size={20} />, route: "/dashboard" },
-    // { name: "All RMO", icon: <Users size={20} />, route: "/dashboard/officers" },
-    // { name: "nitin", icon: <FileText size={20} />, route: "/dashboard/billing" },
-    { name: "Notification", icon: <Bell size={20} />, route: "/dashboard/notification" },
-    { name: "Profile", icon: <User size={20} />, route: "/dashboard/profile" },
-    { name: "How to use", icon: <InfoIcon size={20} />, route: "/dashboard/profile" },
+    {
+      name: "Dashboard",
+      icon: <BarChart2 size={20} />,
+      route: `/rmo/${params.rmo}/officers`,
+    }
   ];
 
   return (

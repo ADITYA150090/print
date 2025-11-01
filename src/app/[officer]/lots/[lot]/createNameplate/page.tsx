@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { toBlob } from "html-to-image";
 import { useParams, useRouter } from "next/navigation";
+import { arena, customName } from '@/lib/font';
 
 // Environment variables with fallbacks and validation
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -14,6 +15,9 @@ if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
     "Missing required environment variables: NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY"
   );
 }
+
+// Add this style tag at the top of your component's return statement, before the main div
+
 
 // Conditional Supabase client creation with error handling
 let supabase: any = null;
@@ -76,32 +80,32 @@ const SUPABASE_FALLBACK_BASE = "https://ylendiyanowzdklxkyny.supabase.co/storage
 
 const templates: Record<string, string[]> = {
   ambuja: [
-    "/ambuja/acc1.jpg",
-    "/ambuja/acc2.jpg",
-    "/ambuja/acc3.jpg",
-    "/ambuja/acc4.jpg",
+    "https://cmfngihxssbqxqmyqftg.supabase.co/storage/v1/object/public/Nameplate/d1.webp", // Different from d1.webp
+    "https://cmfngihxssbqxqmyqftg.supabase.co/storage/v1/object/public/Nameplate/d2.webp",
+    "https://cmfngihxssbqxqmyqftg.supabase.co/storage/v1/object/public/Nameplate/d3.webp",
+    "https://cmfngihxssbqxqmyqftg.supabase.co/storage/v1/object/public/Nameplate/d4.webp",
   ],
   acc: [
-    "/acc/acc11.jpg",
-    "/acc/acc12.jpg",
-    "/acc/acc13.jpg",
-    "/acc/acc14.jpg",
+    "https://cmfngihxssbqxqmyqftg.supabase.co/storage/v1/object/public/Nameplate/d1%20(1).webp",
+    "https://cmfngihxssbqxqmyqftg.supabase.co/storage/v1/object/public/Nameplate/d2%20(1).webp",
+    "https://cmfngihxssbqxqmyqftg.supabase.co/storage/v1/object/public/Nameplate/d3%20(1).webp",
+    "https://cmfngihxssbqxqmyqftg.supabase.co/storage/v1/object/public/Nameplate/d4%20(1).webp",
   ],
 };
 
 // FIXED: Fallback templates - removed duplicate failing image
 const fallbackTemplates: Record<string, string[]> = {
   ambuja: [
-    `${SUPABASE_FALLBACK_BASE}/acc1.webp`,
-    `${SUPABASE_FALLBACK_BASE}/acc2.webp`,
-    `${SUPABASE_FALLBACK_BASE}/acc3.webp`,
-    `${SUPABASE_FALLBACK_BASE}/acc4.webp`,
+    "https://cmfngihxssbqxqmyqftg.supabase.co/storage/v1/object/public/Nameplate/d1.webp", // Different from d1.webp
+    "https://cmfngihxssbqxqmyqftg.supabase.co/storage/v1/object/public/Nameplate/d2.webp",
+    "https://cmfngihxssbqxqmyqftg.supabase.co/storage/v1/object/public/Nameplate/d3.webp",
+    "https://cmfngihxssbqxqmyqftg.supabase.co/storage/v1/object/public/Nameplate/d4.webp",
   ],
   acc: [
-    `${SUPABASE_FALLBACK_BASE}/amb1.webp`,
-    `${SUPABASE_FALLBACK_BASE}/amb2.webp`,
-    `${SUPABASE_FALLBACK_BASE}/amb3.webp`,
-    `${SUPABASE_FALLBACK_BASE}/amb4.webp`,
+    "https://cmfngihxssbqxqmyqftg.supabase.co/storage/v1/object/public/Nameplate/d1%20(1).webp",
+    "https://cmfngihxssbqxqmyqftg.supabase.co/storage/v1/object/public/Nameplate/d2%20(1).webp",
+    "https://cmfngihxssbqxqmyqftg.supabase.co/storage/v1/object/public/Nameplate/d3%20(1).webp",
+    "https://cmfngihxssbqxqmyqftg.supabase.co/storage/v1/object/public/Nameplate/d4%20(1).webp",
   ],
 };
 
@@ -490,7 +494,7 @@ export default function NameplateDesigner() {
 
       if (mongoResult.success) {
         alert(
-          `Success!\n\nImage uploaded to Supabase\nData saved to MongoDB\nTemplate: ${activeNameplate.background}\nURL: ${publicUrl}`
+          `Success!\n\nImage uploaded `
         );
       } else {
         alert(
@@ -861,7 +865,7 @@ export default function NameplateDesigner() {
        <div
   key={activeNameplate.background}   // 👈 forces re-render when background changes
   ref={previewRef}
-  className="relative w-[600px] h-[400px] rounded-xl shadow-2xl overflow-hidden font-sans mb-6"
+  className="relative w-[600px] h-[400px] rounded-xl shadow-2xl overflow-hidden  mb-6"
   style={{
     backgroundImage: `url("${activeNameplate.background}")`,
     backgroundSize: "cover",
@@ -876,8 +880,9 @@ export default function NameplateDesigner() {
             {/* House Name - Only show if it exists */}
             {activeNameplate.houseName && activeNameplate.houseName.trim() && (
               <h1
-                className="absolute text-lg font-bold drop-shadow-lg font-[Great_Vibes] top-10 right-20"
+                className="absolute text-lg font-bold drop-shadow-lg  top-10 right-20"
                 style={{
+                  fontFamily: arena.style.fontFamily,
                   color: activeNameplate.houseNameColor,
                   fontSize: `${activeNameplate.houseNameSize}px`,
                   border: "none",
@@ -892,8 +897,9 @@ export default function NameplateDesigner() {
             
             {/* Owner Name */}
             <p
-              className="absolute drop-shadow-lg font-[Dancing_Script] top-[50%] right-[50%] text-center"
+              className="absolute drop-shadow-lg font-[Arena] top-[50%] right-[50%] text-center"
               style={{
+                fontFamily: arena.style.fontFamily, 
                 color: activeNameplate.ownerNameColor,
                 fontSize: `${activeNameplate.ownerNameSize}px`,
                 transform: 'translate(50%, -50%)',
@@ -910,6 +916,7 @@ export default function NameplateDesigner() {
             <p
               className="absolute text-center drop-shadow-lg font-[Dancing_Script] bottom-10 right-[50%]"
               style={{
+                 fontFamily: customName.style.fontFamily, 
                 color: activeNameplate.addressColor,
                 fontSize: `${activeNameplate.addressSize}px`,
                 transform: 'translateX(50%)',

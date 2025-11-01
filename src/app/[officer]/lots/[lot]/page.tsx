@@ -74,7 +74,7 @@ const lot = decodeURIComponent(params.lot as string);
   return (
     <div  className="min-h-screen p-6 bg-gray-50 relative text-black">
       <h1 className="text-3xl font-bold mb-4">Lot: {lot}</h1>
-      <p className="text-lg mb-6">Officer: {officerParam}</p>
+      <p className="text-lg mb-6">Technical Exicutive: {officerParam}</p>
 
       <button
         onClick={handleCreateDesign}

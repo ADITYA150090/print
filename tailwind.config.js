@@ -1,18 +1,16 @@
-// tailwind.config.js
-const colors = require("tailwindcss/colors");
-
+/** @type {import('tailwindcss').Config} */
 module.exports = {
-    content: [
-        "./src/**/*.{js,ts,jsx,tsx,mdx}",
-        "./components/**/*.{js,ts,jsx,tsx}",
-        "./app/**/*.{js,ts,jsx,tsx}",
-    ],
-    theme: {
-        extend: {
-            colors: {
-
-            },
-        },
+  content: [
+    "./app/**/*.{js,ts,jsx,tsx}",
+    "./components/**/*.{js,ts,jsx,tsx}",
+  ],
+  theme: {
+    extend: {
+      fontFamily: {
+        sans: ["var(--font-poppins)"], // default
+        heading: ["var(--font-roboto)"], // for headings
+      },
     },
-    plugins: [],
+  },
+  plugins: [],
 };
